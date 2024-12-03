@@ -7,6 +7,10 @@ from flask_login import LoginManager
 from .models import db, User
 from .api.user_routes import user_routes
 from .api.auth_routes import auth_routes
+from .api.card_routes import card_routes
+from .api.wallet_routes import wallet_routes
+from .api.category_routes import category_routes
+from .api.spending_routes import spending_routes
 from .seeds import seed_commands
 from .config import Config
 
@@ -28,6 +32,10 @@ app.cli.add_command(seed_commands)
 app.config.from_object(Config)
 app.register_blueprint(user_routes, url_prefix='/api/users')
 app.register_blueprint(auth_routes, url_prefix='/api/auth')
+app.register_blueprint(card_routes, url_prefix='/api/cards')
+app.register_blueprint(wallet_routes, url_prefix='/api/wallet')
+app.register_blueprint(category_routes, url_prefix='/api/categories')
+app.register_blueprint(spending_routes, url_prefix='/api/spending')
 db.init_app(app)
 Migrate(app, db)
 
@@ -35,11 +43,7 @@ Migrate(app, db)
 CORS(app)
 
 
-# Since we are deploying with Docker and Flask,
-# we won't be using a buildpack when we deploy to Heroku.
-# Therefore, we need to make sure that in production any
-# request made over http is redirected to https.
-# Well.........
+# Redirect HTTP to HTTPS in production
 @app.before_request
 def https_redirect():
     if os.environ.get('FLASK_ENV') == 'production':
@@ -49,6 +53,7 @@ def https_redirect():
             return redirect(url, code=code)
 
 
+# Add CSRF token to cookies
 @app.after_request
 def inject_csrf_token(response):
     response.set_cookie(
@@ -60,19 +65,20 @@ def inject_csrf_token(response):
         httponly=True)
     return response
 
-
+# API Documentation Route
 @app.route("/api/docs")
 def api_help():
     """
     Returns all API routes and their doc strings
     """
     acceptable_methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-    route_list = { rule.rule: [[ method for method in rule.methods if method in acceptable_methods ],
-                    app.view_functions[rule.endpoint].__doc__ ]
-                    for rule in app.url_map.iter_rules() if rule.endpoint != 'static' }
+    route_list = {rule.rule: [[method for method in rule.methods if method in acceptable_methods],
+                              app.view_functions[rule.endpoint].__doc__]
+                  for rule in app.url_map.iter_rules() if rule.endpoint != 'static'}
     return route_list
 
 
+# Serve React Frontend
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def react_root(path):
@@ -86,6 +92,7 @@ def react_root(path):
     return app.send_static_file('index.html')
 
 
+# Handle 404 errors by serving the React app
 @app.errorhandler(404)
 def not_found(e):
     return app.send_static_file('index.html')
