@@ -1,6 +1,7 @@
 from .db import db
 from .db import environment, SCHEMA
-from .utils import add_prefix_for_prod
+from ..utils import add_prefix_for_prod
+
 
 
 class Category(db.Model):
@@ -10,7 +11,7 @@ class Category(db.Model):
         __table_args__ = {'schema': SCHEMA}
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False, unique=True)  # Added `unique=True` for better data integrity
+    name = db.Column(db.String(255), nullable=False, unique=True)  # Ensures unique category names
     parent_category_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('categories.id')), nullable=True)
 
     # Relationships
@@ -34,3 +35,18 @@ class Category(db.Model):
             'spending_categories': [sc.to_dict() for sc in self.spending_categories] if self.spending_categories else [],
             'subcategories': [subcategory.to_dict() for subcategory in self.subcategories] if self.subcategories else []
         }
+
+    @staticmethod
+    def get_all_categories_with_subcategories():
+        """
+        Fetch all categories along with their subcategories.
+        """
+        from sqlalchemy.orm import joinedload
+        return db.session.query(Category).options(joinedload(Category.subcategories)).all()
+
+    @staticmethod
+    def get_category_by_name(name):
+        """
+        Fetch a category by its name.
+        """
+        return Category.query.filter_by(name=name).first()

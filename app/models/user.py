@@ -1,7 +1,6 @@
 from .db import db, environment, SCHEMA, add_prefix_for_prod
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from sqlalchemy.orm import relationship
 
 
 class User(db.Model, UserMixin):
@@ -15,8 +14,12 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), nullable=False, unique=True)
     hashed_password = db.Column(db.String(255), nullable=False)
 
-    # Define relationship with Spending
-    spendings = relationship("Spending", back_populates="user", cascade="all, delete-orphan")
+    # Relationships
+    spendings = db.relationship(
+        'Spending',
+        back_populates='user',
+        cascade='all, delete-orphan'
+    )
 
     @property
     def password(self):
@@ -29,11 +32,33 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
-    def to_dict(self):
-        return {
+    def to_dict(self, include_spendings=False):
+        """
+        Returns a dictionary representation of a User instance.
+
+        :param include_spendings: Include associated spendings if True
+        """
+        user_dict = {
             'id': self.id,
             'username': self.username,
             'email': self.email,
-            # Optionally include spendings if needed
-            # 'spendings': [spending.to_dict() for spending in self.spendings]
         }
+
+        if include_spendings:
+            user_dict['spendings'] = [spending.to_dict() for spending in self.spendings]
+
+        return user_dict
+
+    @staticmethod
+    def create_user(username, email, password):
+        """
+        Create a new user instance.
+        """
+        new_user = User(
+            username=username,
+            email=email,
+            hashed_password=generate_password_hash(password)
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        return new_user
