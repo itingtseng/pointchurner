@@ -20,7 +20,6 @@ class SpendingCategory(db.Model):
         db.ForeignKey(add_prefix_for_prod('categories.id'), ondelete="CASCADE"),
         nullable=False
     )
-    priority = db.Column(db.Integer, nullable=False)
 
     # Relationships
     spending = db.relationship('Spending', back_populates='categories')
@@ -36,7 +35,6 @@ class SpendingCategory(db.Model):
             'id': self.id,
             'spending_id': self.spending_id,
             'category_id': self.category_id,
-            'priority': self.priority,
             'category_details': self.category.to_dict() if self.category else None
         }
 
@@ -51,10 +49,3 @@ class SpendingCategory(db.Model):
         Fetch all spending categories for a specific spending profile.
         """
         return SpendingCategory.query.filter_by(spending_id=spending_id).all()
-
-    @staticmethod
-    def get_by_category_id(category_id):
-        """
-        Fetch all spending categories associated with a specific category.
-        """
-        return SpendingCategory.query.filter_by(category_id=category_id).all()

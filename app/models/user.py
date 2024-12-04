@@ -13,6 +13,8 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(40), nullable=False, unique=True)
     email = db.Column(db.String(255), nullable=False, unique=True)
     hashed_password = db.Column(db.String(255), nullable=False)
+    firstname = db.Column(db.String(255), nullable=True)  # Added firstname
+    lastname = db.Column(db.String(255), nullable=True)   # Added lastname
 
     # Relationships
     spendings = db.relationship(
@@ -48,6 +50,8 @@ class User(db.Model, UserMixin):
             'id': self.id,
             'username': self.username,
             'email': self.email,
+            'firstname': self.firstname,  # Include firstname
+            'lastname': self.lastname,    # Include lastname
         }
 
         if include_spendings:
@@ -59,18 +63,22 @@ class User(db.Model, UserMixin):
         return user_dict
 
     @staticmethod
-    def create_user(username, email, password):
+    def create_user(username, email, password, firstname=None, lastname=None):
         """
         Create a new user instance.
 
         :param username: Username of the new user.
         :param email: Email of the new user.
         :param password: Plaintext password to hash and store.
+        :param firstname: First name of the user.
+        :param lastname: Last name of the user.
         """
         new_user = User(
             username=username,
             email=email,
-            hashed_password=generate_password_hash(password)
+            hashed_password=generate_password_hash(password),
+            firstname=firstname,
+            lastname=lastname
         )
         db.session.add(new_user)
         db.session.commit()

@@ -7,16 +7,16 @@ def seed_wallets():
     Seeds initial wallets into the database.
     """
     wallets_data = [
-        {'user_id': 1, 'name': 'Personal Wallet'},
-        {'user_id': 2, 'name': 'Travel Wallet'},
-        {'user_id': 3, 'name': 'Business Wallet'},
-        {'user_id': 4, 'name': 'Savings Wallet'},
-        {'user_id': 5, 'name': 'Vacation Wallet'},
-        {'user_id': 6, 'name': 'Family Wallet'},
-        {'user_id': 7, 'name': 'Shopping Wallet'},
-        {'user_id': 8, 'name': 'Emergency Wallet'},
-        {'user_id': 9, 'name': 'Gift Wallet'},
-        {'user_id': 10, 'name': 'Miscellaneous Wallet'},
+        {'user_id': 1},
+        {'user_id': 2},
+        {'user_id': 3},
+        {'user_id': 4},
+        {'user_id': 5},
+        {'user_id': 6},
+        {'user_id': 7},
+        {'user_id': 8},
+        {'user_id': 9},
+        {'user_id': 10},
     ]
 
     # Use bulk insert for efficient seeding

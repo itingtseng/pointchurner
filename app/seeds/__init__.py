@@ -3,8 +3,10 @@ from .users import seed_users, undo_users
 from .cards import seed_cards, undo_cards
 from .wallets import seed_wallets, undo_wallets
 from .categories import seed_categories, undo_categories
-from .spendings import seed_spendings, undo_spendings  # Corrected function names
+from .spendings import seed_spendings, undo_spendings
 from .reward_points import seed_reward_points, undo_reward_points
+from .spending_categories import seed_spending_categories, undo_spending_categories
+from .wallet_cards import seed_wallet_cards, undo_wallet_cards
 
 from app.models.db import db, environment, SCHEMA
 
@@ -23,6 +25,8 @@ def seed():
         undo_categories()
         undo_spendings()
         undo_reward_points()
+        undo_spending_categories()
+        undo_wallet_cards()
 
     # Seed all data
     seed_users()
@@ -31,11 +35,15 @@ def seed():
     seed_wallets()
     seed_reward_points()
     seed_spendings()
+    seed_spending_categories()
+    seed_wallet_cards()
 
 
 # Creates the `flask seed undo` command
 @seed_commands.command('undo')
 def undo():
+    undo_wallet_cards()
+    undo_spending_categories()
     undo_reward_points()
     undo_users()
     undo_cards()

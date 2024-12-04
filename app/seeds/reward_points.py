@@ -44,7 +44,7 @@ def seed_reward_points():
             reward_point = RewardPoint(
                 card_id=card.id,
                 category_id=category.id,
-                bonus_point=float(reward_data.get("points", 0)),
+                bonus_point=float(reward_data.get("points", 0)),  # Decimal compatibility
                 multiplier_type=reward_data.get("type", "").strip()
             )
             db.session.add(reward_point)

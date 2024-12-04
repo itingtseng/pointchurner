@@ -219,7 +219,7 @@
         "url": "https://www.americanexpress.com/us/credit-cards/card/blue-cash-everyday/",
         "reward_points": [
           {
-          "category_id": "dining",
+          "category_id": "1",
           "bonus_point": "3",
           "multiplier_type": "%",
           },
@@ -261,8 +261,8 @@
         "network": "AMERICAN_EXPRESS",
         "reward_points": [
           {
-          "category_id": "dining",
-          "bonus_point": "3",
+          "category_id": 1,
+          "bonus_point": 1,
           "multiplier_type": "%",
           },
           // more categories...
@@ -312,8 +312,8 @@
         "network": "AMERICAN_EXPRESS",
         "reward_points": [
           {
-          "category_id": "dining",
-          "bonus_point": "3",
+          "category_id": 1,
+          "bonus_point": 1,
           "multiplier_type": "%",
           },
           // more categories...
@@ -439,7 +439,6 @@
         {
           "category_id": 1,
           "spending_id": 1,
-          "priority": 1,
           "name": "dining",
           "parent_categories_id": 1,
         }
@@ -447,25 +446,6 @@
     ```
   - **404**: Category not found.
   - **409**: Category already exists in spending profile.
-
----
-
-### **Edit Category in Spending**
-
-- **Method**: PUT  
-- **Route path**: `/api/spending/categories/:categoryId`  
-- **Authentication**: True  
-- **Body**:  
-  ```json
-  {
-    "category_id": 1,
-    "priority": 1,
-  }
-  ```
-
-- **Responses**:
-  - **200**: Category updated in spending profile.
-  - **404**: Category not found in spending profile.
 
 ---
 

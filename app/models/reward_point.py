@@ -12,7 +12,7 @@ class RewardPoint(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     card_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('cards.id')), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('categories.id')), nullable=False)
-    bonus_point = db.Column(db.Float, nullable=False)
+    bonus_point = db.Column(db.Numeric(10, 2), nullable=False)  # Changed to Decimal
     multiplier_type = db.Column(db.String(10), nullable=False)  # e.g., '%', 'x'
 
     # Relationships
@@ -30,7 +30,7 @@ class RewardPoint(db.Model):
             'id': self.id,
             'card_id': self.card_id,
             'category_id': self.category_id,
-            'bonus_point': self.bonus_point,
+            'bonus_point': float(self.bonus_point),  # Ensure compatibility with JSON serialization
             'multiplier_type': self.multiplier_type,
         }
 

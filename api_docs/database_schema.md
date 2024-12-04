@@ -112,7 +112,6 @@
 | ---------------- | --------- | --------------------- |
 | spending_id      | integer   | not null, foreign key |
 | category_id      | integer   | not null, foreign key |
-| priority         | integer   |                       |
 | created_at       | datetime  | not null              |
 | updated_at       | datetime  | not null              |
 

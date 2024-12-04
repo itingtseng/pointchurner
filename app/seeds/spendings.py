@@ -18,8 +18,8 @@ def seed_spendings():
 
     # Create spending categories
     spending_categories = [
-        {"spending_id": spendings[0].id, "category_id": 1, "priority": 1},
-        {"spending_id": spendings[1].id, "category_id": 1, "priority": 1},
+        {"spending_id": spendings[0].id, "category_id": 1},
+        {"spending_id": spendings[1].id, "category_id": 1},
     ]
 
     for sc in spending_categories:
@@ -31,8 +31,7 @@ def seed_spendings():
         # Create and add the spending category
         spending_category = SpendingCategory(
             spending_id=sc["spending_id"],
-            category_id=sc["category_id"],
-            priority=sc["priority"]
+            category_id=sc["category_id"]
         )
         db.session.add(spending_category)
     
