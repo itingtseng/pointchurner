@@ -20,6 +20,11 @@ class User(db.Model, UserMixin):
         back_populates='user',
         cascade='all, delete-orphan'
     )
+    wallets = db.relationship(
+        'Wallet',
+        back_populates='user',
+        cascade='all, delete-orphan'
+    )
 
     @property
     def password(self):
@@ -32,11 +37,12 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
-    def to_dict(self, include_spendings=False):
+    def to_dict(self, include_spendings=False, include_wallets=False):
         """
         Returns a dictionary representation of a User instance.
 
-        :param include_spendings: Include associated spendings if True
+        :param include_spendings: Include associated spendings if True.
+        :param include_wallets: Include associated wallets if True.
         """
         user_dict = {
             'id': self.id,
@@ -47,12 +53,19 @@ class User(db.Model, UserMixin):
         if include_spendings:
             user_dict['spendings'] = [spending.to_dict() for spending in self.spendings]
 
+        if include_wallets:
+            user_dict['wallets'] = [wallet.to_dict() for wallet in self.wallets]
+
         return user_dict
 
     @staticmethod
     def create_user(username, email, password):
         """
         Create a new user instance.
+
+        :param username: Username of the new user.
+        :param email: Email of the new user.
+        :param password: Plaintext password to hash and store.
         """
         new_user = User(
             username=username,
