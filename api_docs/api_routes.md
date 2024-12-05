@@ -404,7 +404,6 @@
         {
           "category_id": 1,
           "spending_id": 1,
-          "priority": 1,
           "name": "dining",
           "parent_categories_id": 1,
         }
@@ -426,7 +425,6 @@
   ```json
   {
     "category_id": 1,
-    "priority": 1,
   }
   ```
 
