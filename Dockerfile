@@ -22,3 +22,5 @@ COPY . .
 RUN flask db upgrade
 RUN flask seed all
 CMD gunicorn app:app
+
+ENV DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mydatabase
