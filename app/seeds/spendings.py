@@ -24,7 +24,7 @@ def seed_spendings():
         # Create spending categories
         spending_categories = [
             {"spending_id": spendings[0].id, "category_id": 1},
-            {"spending_id": spendings[1].id, "category_id": 1},
+            {"spending_id": spendings[1].id, "category_id": 2},
         ]
 
         for sc in spending_categories:

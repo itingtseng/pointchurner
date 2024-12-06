@@ -14,8 +14,6 @@ class Spending(db.Model):
         db.ForeignKey(add_prefix_for_prod('users.id'), ondelete="CASCADE"),
         nullable=False
     )
-    amount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)  # Represents the spending amount
-    description = db.Column(db.String(255), nullable=True)  # Optional spending description
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now(), onupdate=db.func.now())
 
@@ -37,8 +35,6 @@ class Spending(db.Model):
         spending_dict = {
             'id': self.id,
             'user_id': self.user_id,
-            'amount': float(self.amount),  # Ensures compatibility with JSON serialization
-            'description': self.description,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -54,19 +50,13 @@ class Spending(db.Model):
         return spending_dict
 
     @staticmethod
-    def create_spending(user_id, amount, description=None):
+    def create_spending(user_id):
         """
         Create a new Spending instance.
 
         :param user_id: ID of the associated user.
-        :param amount: Amount spent.
-        :param description: Optional description of the spending.
         """
-        spending = Spending(
-            user_id=user_id,
-            amount=amount,
-            description=description
-        )
+        spending = Spending(user_id=user_id)
         db.session.add(spending)
         db.session.commit()
         return spending
