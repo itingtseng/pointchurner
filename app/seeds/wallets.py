@@ -1,35 +1,47 @@
-from app.models import db, environment, SCHEMA, Wallet
+from app.models import db, Wallet, environment, SCHEMA
+from datetime import datetime
 from sqlalchemy.sql import text
 
 
 def seed_wallets():
     """
-    Seeds initial wallets into the database.
+    Seeds wallets into the database for multiple users.
     """
-    wallets_data = [
-        {'user_id': 1},
-        {'user_id': 2},
-        {'user_id': 3},
-        {'user_id': 4},
-        {'user_id': 5},
-        {'user_id': 6},
-        {'user_id': 7},
-        {'user_id': 8},
-        {'user_id': 9},
-        {'user_id': 10},
-    ]
+    try:
+        # Define wallet data
+        wallets_data = [
+            {"user_id": 1, "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"user_id": 2, "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+        ]
 
-    # Use bulk insert for efficient seeding
-    db.session.bulk_insert_mappings(Wallet, wallets_data)
-    db.session.commit()
+        # Seed wallets
+        for data in wallets_data:
+            wallet = Wallet(
+                user_id=data["user_id"],
+                created_at=data["created_at"],
+                updated_at=data["updated_at"],
+            )
+            db.session.add(wallet)
+
+        # Commit changes
+        db.session.commit()
+        print("Wallets seeding completed successfully.")
+    except Exception as e:
+        print(f"An error occurred during wallet seeding: {e}")
+        db.session.rollback()
 
 
 def undo_wallets():
     """
-    Deletes all wallets and resets the primary key sequence.
+    Removes all wallets from the database and resets primary keys.
     """
-    if environment == "production":
-        db.session.execute(f"TRUNCATE TABLE {SCHEMA}.wallets RESTART IDENTITY CASCADE;")
-    else:
-        db.session.execute(text("DELETE FROM wallets"))
-    db.session.commit()
+    try:
+        if environment == "production":
+            db.session.execute(f"TRUNCATE TABLE {SCHEMA}.wallets RESTART IDENTITY CASCADE;")
+        else:
+            db.session.execute(text("DELETE FROM wallets"))
+        db.session.commit()
+        print("Wallets table cleared successfully.")
+    except Exception as e:
+        print(f"An error occurred while clearing the wallets table: {e}")
+        db.session.rollback()

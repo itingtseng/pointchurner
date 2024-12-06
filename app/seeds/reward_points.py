@@ -1,27 +1,23 @@
-from app.models import db, RewardPoint, Card, Category
+from app.models import db, RewardPoint, Card, Category, environment, SCHEMA
 import requests
-from sqlalchemy.exc import SQLAlchemyError
-
+from sqlalchemy.sql import text
 
 def seed_reward_points():
     """
-    Seed the reward_points table with data fetched from an external JSON source.
+    Seeds reward points into the database, associating them with cards and categories.
     """
     try:
-        # Check if the reward_points table exists
-        if not db.engine.dialect.has_table(db.engine, "reward_points"):
-            print("The reward_points table does not exist. Skipping seeding.")
+        # Check if the reward_points table exists in the schema
+        if not db.engine.dialect.has_table(db.engine, "reward_points", schema=SCHEMA if environment == "production" else None):
+            print(f"The reward_points table does not exist in the schema {SCHEMA}. Skipping seeding.")
             return
 
         # Fetch data from the URL
         url = "https://raw.githubusercontent.com/andenacitelli/credit-card-bonuses-api/main/exports/data.json"
-        try:
-            response = requests.get(url)
-            response.raise_for_status()  # Raise an HTTPError for bad responses
-        except requests.RequestException as e:
-            print(f"Failed to fetch data from {url}. Error: {e}")
-            return
-
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch data from {url}. Status code: {response.status_code}")
+        
         data = response.json()
 
         # Process and seed reward points
@@ -51,7 +47,7 @@ def seed_reward_points():
 
                 # Skip if the reward point already exists
                 if category.id in existing_reward_points:
-                    print(f"Reward point for category '{category_name}' already exists for card '{card.name}'. Skipping.")
+                    print(f"Reward point for category {category_name} already exists for card {card.name}. Skipping.")
                     continue
 
                 # Add new reward point
@@ -66,38 +62,28 @@ def seed_reward_points():
         # Commit all changes to the database
         db.session.commit()
         print("Reward points seeding completed successfully.")
-
-    except SQLAlchemyError as e:
-        print(f"Database error during seeding: {e}")
-        db.session.rollback()  # Rollback in case of database errors
-
     except Exception as e:
-        print(f"An unexpected error occurred during seeding: {e}")
-        db.session.rollback()
+        print(f"An error occurred during seeding: {e}")
+        db.session.rollback()  # Rollback in case of errors
 
 
 def undo_reward_points():
     """
-    Remove all entries from the reward_points table and reset its identity.
+    Removes all reward points from the database and resets primary keys.
     """
     try:
-        # Check if the reward_points table exists
-        if not db.engine.dialect.has_table(db.engine, "reward_points"):
-            print("The reward_points table does not exist. Skipping undo.")
+        # Check if the reward_points table exists in the schema
+        if not db.engine.dialect.has_table(db.engine, "reward_points", schema=SCHEMA if environment == "production" else None):
+            print(f"The reward_points table does not exist in the schema {SCHEMA}. Skipping undo.")
             return
 
         # Remove all entries from the reward_points table
-        if db.engine.url.drivername == "postgresql":
-            db.session.execute("TRUNCATE TABLE reward_points RESTART IDENTITY CASCADE;")
+        if environment == "production":
+            db.session.execute(f"TRUNCATE TABLE {SCHEMA}.reward_points RESTART IDENTITY CASCADE;")
         else:
-            db.session.execute("DELETE FROM reward_points")
+            db.session.execute(text("DELETE FROM reward_points"))
         db.session.commit()
         print("Reward points table cleared successfully.")
-
-    except SQLAlchemyError as e:
-        print(f"Database error while clearing the reward_points table: {e}")
-        db.session.rollback()
-
     except Exception as e:
-        print(f"An unexpected error occurred while clearing the reward_points table: {e}")
-        db.session.rollback()
+        print(f"An error occurred while clearing the reward points table: {e}")
+        db.session.rollback()  # Rollback in case of errors

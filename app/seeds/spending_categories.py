@@ -1,7 +1,10 @@
-from app.models import db, SpendingCategory, Spending, Category
-
+from app.models import db, SpendingCategory, Spending, Category, environment, SCHEMA
+from sqlalchemy.sql import text
 
 def seed_spending_categories():
+    """
+    Seeds spending categories into the database, linking spendings and categories.
+    """
     # Fetch existing spendings and categories
     spendings = Spending.query.all()
     categories = Category.query.all()
@@ -38,11 +41,20 @@ def seed_spending_categories():
 
     # Commit changes
     db.session.commit()
+    print("Spending categories seeding completed successfully.")
 
 
 def undo_spending_categories():
-    if db.engine.url.drivername == "postgresql":
-        db.session.execute("TRUNCATE TABLE spending_categories RESTART IDENTITY CASCADE;")
-    else:
-        db.session.execute("DELETE FROM spending_categories;")
-    db.session.commit()
+    """
+    Removes all spending categories from the database and resets primary keys.
+    """
+    try:
+        if environment == "production":
+            db.session.execute(f"TRUNCATE TABLE {SCHEMA}.spending_categories RESTART IDENTITY CASCADE;")
+        else:
+            db.session.execute(text("DELETE FROM spending_categories"))
+        db.session.commit()
+        print("Spending categories table cleared successfully.")
+    except Exception as e:
+        print(f"An error occurred while clearing the spending categories table: {e}")
+        db.session.rollback()

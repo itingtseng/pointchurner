@@ -1,8 +1,10 @@
-from app.models import db, Category
+from app.models import db, Category, environment, SCHEMA
 from sqlalchemy.sql import text
 
-
 def seed_categories():
+    """
+    Seeds initial categories and subcategories into the database.
+    """
     # Define categories and subcategories
     categories_data = [
         {
@@ -60,6 +62,7 @@ def seed_categories():
         else:
             category = Category(name=category_data["name"])
             db.session.add(category)
+            db.session.commit()  # Commit to get the category ID
 
         # Add subcategories
         for subcategory_data in category_data.get("subcategories", []):
@@ -75,10 +78,11 @@ def seed_categories():
 
 
 def undo_categories():
-    if db.engine.url.drivername == 'postgresql':
-        db.session.execute("TRUNCATE TABLE categories RESTART IDENTITY CASCADE;")
+    """
+    Removes all categories from the database and resets primary keys.
+    """
+    if environment == "production":
+        db.session.execute(f"TRUNCATE TABLE {SCHEMA}.categories RESTART IDENTITY CASCADE;")
     else:
         db.session.execute(text("DELETE FROM categories"))
-        db.session.execute(text("UPDATE sqlite_sequence SET seq = 0 WHERE name='categories'"))
-    
     db.session.commit()
