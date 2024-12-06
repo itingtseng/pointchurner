@@ -1,5 +1,4 @@
-from .db import db
-from .db import environment, SCHEMA
+from .db import db, environment, SCHEMA
 from ..utils import add_prefix_for_prod
 
 
@@ -12,25 +11,33 @@ class RewardPoint(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     card_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('cards.id')), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('categories.id')), nullable=False)
-    bonus_point = db.Column(db.Numeric(10, 2), nullable=False)  # Changed to Decimal
-    multiplier_type = db.Column(db.String(10), nullable=False)  # e.g., '%', 'x'
+    bonus_point = db.Column(db.Numeric(10, 2), nullable=False)  # Use Decimal for precise numeric handling
+    multiplier_type = db.Column(db.String(10), nullable=False)  # Examples: '%', 'x'
 
     # Relationships
-    card = db.relationship('Card', back_populates='reward_points')
-    category = db.relationship('Category', back_populates='reward_points')
+    card = db.relationship(
+        'Card',
+        back_populates='reward_points',
+        lazy='joined'
+    )
+    category = db.relationship(
+        'Category',
+        back_populates='reward_points',
+        lazy='joined'
+    )
 
     def to_dict(self, include_card=False, include_category=False):
         """
         Returns a dictionary representation of a RewardPoint instance.
 
-        :param include_card: Include card details if True
-        :param include_category: Include category details if True
+        :param include_card: Include associated card details if True.
+        :param include_category: Include associated category details if True.
         """
         reward_point_dict = {
             'id': self.id,
             'card_id': self.card_id,
             'category_id': self.category_id,
-            'bonus_point': float(self.bonus_point),  # Ensure compatibility with JSON serialization
+            'bonus_point': float(self.bonus_point),  # Ensure JSON serialization compatibility
             'multiplier_type': self.multiplier_type,
         }
 
@@ -45,13 +52,33 @@ class RewardPoint(db.Model):
     @staticmethod
     def get_reward_points_by_card(card_id):
         """
-        Fetch all reward points for a specific card.
+        Fetch all reward points associated with a specific card.
         """
         return RewardPoint.query.filter_by(card_id=card_id).all()
 
     @staticmethod
     def get_reward_points_by_category(category_id):
         """
-        Fetch all reward points for a specific category.
+        Fetch all reward points associated with a specific category.
         """
         return RewardPoint.query.filter_by(category_id=category_id).all()
+
+    @staticmethod
+    def create_reward_point(card_id, category_id, bonus_point, multiplier_type):
+        """
+        Create a new RewardPoint instance.
+
+        :param card_id: ID of the associated card.
+        :param category_id: ID of the associated category.
+        :param bonus_point: Bonus points for the reward.
+        :param multiplier_type: Multiplier type (e.g., '%', 'x').
+        """
+        reward_point = RewardPoint(
+            card_id=card_id,
+            category_id=category_id,
+            bonus_point=bonus_point,
+            multiplier_type=multiplier_type
+        )
+        db.session.add(reward_point)
+        db.session.commit()
+        return reward_point

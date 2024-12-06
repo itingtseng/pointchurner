@@ -15,8 +15,18 @@ class Card(db.Model):
     url = db.Column(db.String(255), nullable=True)  # Optional if not always required
 
     # Relationships
-    reward_points = db.relationship('RewardPoint', back_populates='card', cascade='all, delete-orphan')
-    wallet_cards = db.relationship('WalletCard', back_populates='card', cascade='all, delete-orphan')
+    reward_points = db.relationship(
+        'RewardPoint',
+        back_populates='card',
+        cascade='all, delete-orphan',
+        lazy='joined'
+    )
+    wallet_cards = db.relationship(
+        'WalletCard',
+        back_populates='card',
+        cascade='all, delete-orphan',
+        lazy='joined'
+    )
 
     def to_dict(self, include_wallet_cards=False):
         """
@@ -37,3 +47,23 @@ class Card(db.Model):
             card_dict['wallet_cards'] = [wallet_card.to_dict() for wallet_card in self.wallet_cards]
 
         return card_dict
+
+    @staticmethod
+    def create_card(name, issuer, image_url=None, url=None):
+        """
+        Creates a new card instance and saves it to the database.
+
+        :param name: Name of the card.
+        :param issuer: Issuer of the card.
+        :param image_url: Optional URL for the card's image.
+        :param url: Optional URL for more card details.
+        """
+        card = Card(
+            name=name,
+            issuer=issuer,
+            image_url=image_url,
+            url=url
+        )
+        db.session.add(card)
+        db.session.commit()
+        return card
