@@ -1,70 +1,637 @@
 from app.models import db, RewardPoint, Card, Category, environment, SCHEMA
-import requests
+from sqlalchemy import inspect
 from sqlalchemy.sql import text
+
 
 def seed_reward_points():
     """
     Seeds reward points into the database, associating them with cards and categories.
     """
     try:
-        # Check if the reward_points table exists in the schema
-        if not db.engine.dialect.has_table(db.engine, "reward_points", schema=SCHEMA if environment == "production" else None):
+        # Check if the `reward_points` table exists using the inspector
+        inspector = inspect(db.engine)
+        table_exists = inspector.has_table("reward_points", schema=SCHEMA if environment == "production" else None)
+
+        if not table_exists:
             print(f"The reward_points table does not exist in the schema {SCHEMA}. Skipping seeding.")
             return
 
-        # Fetch data from the URL
-        url = "https://raw.githubusercontent.com/andenacitelli/credit-card-bonuses-api/main/exports/data.json"
-        response = requests.get(url)
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch data from {url}. Status code: {response.status_code}")
-        
-        data = response.json()
+        # Reward points data
+        reward_points_data = [
+            {	"card_id":	1	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	1	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	2	,	"category_id":	26	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	2	,	"category_id":	26	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	3	,	"category_id":	9	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	3	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	3	,	"category_id":	30	,	"bonus_point":	2	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	3	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	4	,	"category_id":	9	,	"bonus_point":	6	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	4	,	"category_id":	18	,	"bonus_point":	6	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	4	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	4	,	"category_id":	11	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	4	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	5	,	"category_id":	9	,	"bonus_point":	6	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	5	,	"category_id":	18	,	"bonus_point":	6	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	5	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	5	,	"category_id":	11	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	5	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	6	,	"category_id":	32	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	6	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	7	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	7	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	8	,	"category_id":	5	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	8	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	8	,	"category_id":	26	,	"bonus_point":	1.5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	8	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	9	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	10	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	10	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	10	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	11	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	11	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	11	,	"category_id":	9	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	11	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	12	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	12	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	12	,	"category_id":	24	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	12	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	13	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	13	,	"category_id":	6	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	13	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	13	,	"category_id":	9	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	13	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	14	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	14	,	"category_id":	6	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	14	,	"category_id":	34	,	"bonus_point":	1.5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	14	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	15	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	15	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	16	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	16	,	"category_id":	34	,	"bonus_point":	1.5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	16	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	17	,	"category_id":	9	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	17	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	18	,	"category_id":	9	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	18	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	18	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	19	,	"category_id":	2	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	19	,	"category_id":	9	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	19	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	19	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	20	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	20	,	"category_id":	2	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	20	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	21	,	"category_id":	6	,	"bonus_point":	7	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	21	,	"category_id":	2	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	21	,	"category_id":	9	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	21	,	"category_id":	12	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	21	,	"category_id":	36	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	22	,	"category_id":	6	,	"bonus_point":	14	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	22	,	"category_id":	5	,	"bonus_point":	7	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	22	,	"category_id":	7	,	"bonus_point":	7	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	22	,	"category_id":	2	,	"bonus_point":	7	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	22	,	"category_id":	36	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	23	,	"category_id":	6	,	"bonus_point":	12	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	23	,	"category_id":	2	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	23	,	"category_id":	9	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	23	,	"category_id":	12	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	23	,	"category_id":	21	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	23	,	"category_id":	24	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	23	,	"category_id":	36	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	24	,	"category_id":	6	,	"bonus_point":	12	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	24	,	"category_id":	2	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	24	,	"category_id":	9	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	24	,	"category_id":	12	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	24	,	"category_id":	36	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	25	,	"category_id":	6	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	25	,	"category_id":	2	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	25	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	25	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	26	,	"category_id":	6	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	26	,	"category_id":	2	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	26	,	"category_id":	12	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	26	,	"category_id":	24	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	26	,	"category_id":	21	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	26	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	27	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	27	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	28	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	28	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	29	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	29	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	30	,	"category_id":	6	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	30	,	"category_id":	2	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	30	,	"category_id":	8	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	30	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	31	,	"category_id":	30	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	31	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	31	,	"category_id":	23	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	31	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	32	,	"category_id":	36	,	"bonus_point":	1.25	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	33	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	33	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	33	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	34	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	34	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	35	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	35	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	36	,	"category_id":	32	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	36	,	"category_id":	11	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	36	,	"category_id":	1	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	36	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	36	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	36	,	"category_id":	25	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	36	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	37	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	37	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	37	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	38	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	38	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	38	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	39	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	40	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	41	,	"category_id":	32	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	41	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	41	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	41	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	41	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	42	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	43	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	45	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	45	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	45	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	45	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	46	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	46	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	47	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	47	,	"category_id":	23	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	47	,	"category_id":	19	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	47	,	"category_id":	7	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	47	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	48	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	48	,	"category_id":	28	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	48	,	"category_id":	29	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	48	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	49	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	49	,	"category_id":	6	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	49	,	"category_id":	7	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	49	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	49	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	50	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	50	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	51	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	51	,	"category_id":	6	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	51	,	"category_id":	7	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	51	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	52	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	52	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	52	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	53	,	"category_id":	5	,	"bonus_point":	5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	53	,	"category_id":	2	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	53	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	54	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	54	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	54	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	54	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	54	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	55	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	55	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	55	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	55	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	56	,	"category_id":	5	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	56	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	56	,	"category_id":	23	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	56	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	57	,	"category_id":	5	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	57	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	57	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	57	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	58	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	58	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	59	,	"category_id":	36	,	"bonus_point":	1.25	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	60	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	60	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	60	,	"category_id":	19	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	60	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	60	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	61	,	"category_id":	6	,	"bonus_point":	8	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	61	,	"category_id":	26	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	61	,	"category_id":	26	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	61	,	"category_id":	19	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	61	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	62	,	"category_id":	6	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	62	,	"category_id":	12	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	62	,	"category_id":	19	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	62	,	"category_id":	8	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	62	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	63	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	63	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	63	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	63	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	63	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	64	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	64	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	64	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	64	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	65	,	"category_id":	30	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	65	,	"category_id":	18	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	65	,	"category_id":	1	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	65	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	66	,	"category_id":	14	,	"bonus_point":	8	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	66	,	"category_id":	15	,	"bonus_point":	8	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	66	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	66	,	"category_id":	2	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	66	,	"category_id":	1	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	66	,	"category_id":	18	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	66	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	67	,	"category_id":	6	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	67	,	"category_id":	1	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	67	,	"category_id":	8	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	67	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	68	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	68	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	68	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	68	,	"category_id":	6	,	"bonus_point":	2	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	68	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	69	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	69	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	69	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	69	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	70	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	70	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	70	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	70	,	"category_id":	6	,	"bonus_point":	2	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	70	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	71	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	71	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	71	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	71	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	71	,	"category_id":	18	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	71	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	72	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	73	,	"category_id":	33	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	73	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	73	,	"category_id":	1	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	73	,	"category_id":	28	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	73	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	74	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	74	,	"category_id":	1	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	74	,	"category_id":	28	,	"bonus_point":	3	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	74	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	75	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	75	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	75	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	75	,	"category_id":	6	,	"bonus_point":	2	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	75	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Avios	"	},
+{	"card_id":	76	,	"category_id":	6	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	76	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	76	,	"category_id":	1	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	76	,	"category_id":	12	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	76	,	"category_id":	36	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	77	,	"category_id":	6	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	77	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	77	,	"category_id":	1	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	77	,	"category_id":	12	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	77	,	"category_id":	36	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	78	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	78	,	"category_id":	1	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	78	,	"category_id":	19	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	78	,	"category_id":	18	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	78	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	79	,	"category_id":	23	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	79	,	"category_id":	21	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	79	,	"category_id":	20	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	79	,	"category_id":	21	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	79	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	79	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	79	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	80	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	80	,	"category_id":	24	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	80	,	"category_id":	24	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	80	,	"category_id":	20	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	80	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	81	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	82	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	82	,	"category_id":	34	,	"bonus_point":	2.5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	83	,	"category_id":	6	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	83	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	83	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	84	,	"category_id":	6	,	"bonus_point":	6	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	84	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	84	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	85	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	85	,	"category_id":	1	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	85	,	"category_id":	18	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	85	,	"category_id":	8	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	85	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	85	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	86	,	"category_id":	1	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	86	,	"category_id":	6	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	86	,	"category_id":	7	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	86	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	86	,	"category_id":	1	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	86	,	"category_id":	36	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	86	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	87	,	"category_id":	5	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	87	,	"category_id":	6	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	87	,	"category_id":	11	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	87	,	"category_id":	14	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	88	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	88	,	"category_id":	11	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	88	,	"category_id":	14	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	89	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	89	,	"category_id":	11	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	89	,	"category_id":	14	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	90	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	90	,	"category_id":	6	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	91	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	91	,	"category_id":	11	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	91	,	"category_id":	14	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	92	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	92	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	92	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	93	,	"category_id":	5	,	"bonus_point":	4	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	93	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	93	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	93	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	94	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	94	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	94	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	94	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	95	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	95	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	95	,	"category_id":	6	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	95	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	96	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	96	,	"category_id":	11	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	96	,	"category_id":	14	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	96	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	97	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	97	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	97	,	"category_id":	18	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	97	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	98	,	"category_id":	6	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	98	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	98	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	98	,	"category_id":	11	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	98	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	99	,	"category_id":	6	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	99	,	"category_id":	32	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	99	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	100	,	"category_id":	16	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	100	,	"category_id":	8	,	"bonus_point":	5	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	100	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	100	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	100	,	"category_id":	28	,	"bonus_point":	2	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	100	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Percent	"	},
+{	"card_id":	101	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	%	"	},
+{	"card_id":	102	,	"category_id":	1	,	"bonus_point":	4	,	"multiplier_type":	"	%	"	},
+{	"card_id":	102	,	"category_id":	35	,	"bonus_point":	4	,	"multiplier_type":	"	%	"	},
+{	"card_id":	102	,	"category_id":	18	,	"bonus_point":	4	,	"multiplier_type":	"	%	"	},
+{	"card_id":	102	,	"category_id":	8	,	"bonus_point":	3	,	"multiplier_type":	"	%	"	},
+{	"card_id":	102	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	%	"	},
+{	"card_id":	103	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	%	"	},
+{	"card_id":	104	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	105	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	%	"	},
+{	"card_id":	106	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	107	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	107	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	107	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	108	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	108	,	"category_id":	6	,	"bonus_point":	10	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	108	,	"category_id":	4	,	"bonus_point":	10	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	108	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	109	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	109	,	"category_id":	6	,	"bonus_point":	10	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	109	,	"category_id":	4	,	"bonus_point":	10	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	109	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	109	,	"category_id":	36	,	"bonus_point":	1.25	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	110	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	110	,	"category_id":	4	,	"bonus_point":	5	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	111	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	111	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	112	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	112	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	112	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	113	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	113	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	113	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	113	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	114	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	114	,	"category_id":	20	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	114	,	"category_id":	20	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	114	,	"category_id":	7	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	114	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	114	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	115	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	%	"	},
+{	"card_id":	116	,	"category_id":	32	,	"bonus_point":	5	,	"multiplier_type":	"	%	"	},
+{	"card_id":	116	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	%	"	},
+{	"card_id":	117	,	"category_id":	6	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	117	,	"category_id":	7	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	117	,	"category_id":	4	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	117	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	117	,	"category_id":	6	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	117	,	"category_id":	2	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	117	,	"category_id":	8	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	117	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	117	,	"category_id":	13	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	117	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	118	,	"category_id":	9	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	118	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	118	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	119	,	"category_id":	19	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	119	,	"category_id":	19	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	119	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	120	,	"category_id":	33	,	"bonus_point":	5	,	"multiplier_type":	"	%	"	},
+{	"card_id":	120	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	%	"	},
+{	"card_id":	121	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	121	,	"category_id":	2	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	121	,	"category_id":	31	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	121	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	122	,	"category_id":	5	,	"bonus_point":	4	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	122	,	"category_id":	2	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	122	,	"category_id":	31	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	122	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	123	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	123	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	123	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	123	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	123	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	124	,	"category_id":	5	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	124	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	124	,	"category_id":	1	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	124	,	"category_id":	8	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	124	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	125	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	125	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	125	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	125	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	126	,	"category_id":	5	,	"bonus_point":	4	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	126	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	126	,	"category_id":	8	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	126	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	127	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	127	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	127	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	127	,	"category_id":	11	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	127	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	128	,	"category_id":	4	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	128	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	129	,	"category_id":	6	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	129	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	130	,	"category_id":	6	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	130	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	131	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	% Cash Back	"	},
+{	"card_id":	132	,	"category_id":	12	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	132	,	"category_id":	8	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	132	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	133	,	"category_id":	4	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	133	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	133	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	134	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	%	"	},
+{	"card_id":	135	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Asia Miles	"	},
+{	"card_id":	135	,	"category_id":	1	,	"bonus_point":	1.5	,	"multiplier_type":	"	Asia Miles	"	},
+{	"card_id":	135	,	"category_id":	31	,	"bonus_point":	1.5	,	"multiplier_type":	"	Asia Miles	"	},
+{	"card_id":	135	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Asia Miles	"	},
+{	"card_id":	136	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	136	,	"category_id":	7	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	136	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	136	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	137	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	137	,	"category_id":	7	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	137	,	"category_id":	4	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	137	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	137	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	138	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	138	,	"category_id":	7	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	138	,	"category_id":	4	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	138	,	"category_id":	12	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	138	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	138	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	138	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	139	,	"category_id":	1	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	139	,	"category_id":	1	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	139	,	"category_id":	11	,	"bonus_point":	4	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	139	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	139	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	139	,	"category_id":	18	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	139	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	140	,	"category_id":	32	,	"bonus_point":	5	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	140	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	140	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	140	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	141	,	"category_id":	1	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	141	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	141	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	141	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	142	,	"category_id":	32	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	142	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	143	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	143	,	"category_id":	23	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	143	,	"category_id":	22	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	143	,	"category_id":	2	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	143	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	144	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	145	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	145	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	146	,	"category_id":	5	,	"bonus_point":	3	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	146	,	"category_id":	1	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	146	,	"category_id":	6	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	146	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	147	,	"category_id":	5	,	"bonus_point":	2	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	147	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Miles	"	},
+{	"card_id":	148	,	"category_id":	32	,	"bonus_point":	6	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	148	,	"category_id":	8	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	148	,	"category_id":	25	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	148	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	148	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	Cash Back	"	},
+{	"card_id":	149	,	"category_id":	36	,	"bonus_point":	1.5	,	"multiplier_type":	"	%	"	},
+{	"card_id":	150	,	"category_id":	36	,	"bonus_point":	2	,	"multiplier_type":	"	%	"	},
+{	"card_id":	151	,	"category_id":	2	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	151	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	151	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	151	,	"category_id":	11	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	151	,	"category_id":	18	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	151	,	"category_id":	22	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	151	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	152	,	"category_id":	2	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	152	,	"category_id":	4	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	152	,	"category_id":	12	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	152	,	"category_id":	11	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	152	,	"category_id":	18	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	152	,	"category_id":	22	,	"bonus_point":	3	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	152	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	153	,	"category_id":	6	,	"bonus_point":	5	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	153	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	153	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	153	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	154	,	"category_id":	6	,	"bonus_point":	10	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	154	,	"category_id":	8	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	154	,	"category_id":	12	,	"bonus_point":	2	,	"multiplier_type":	"	Points	"	},
+{	"card_id":	154	,	"category_id":	36	,	"bonus_point":	1	,	"multiplier_type":	"	Points	"	}
+        ]
 
-        # Process and seed reward points
-        for card_data in data:
-            # Find the card in the database
-            card = Card.query.filter_by(name=card_data["name"]).first()
-            if not card:
-                print(f"Card {card_data['name']} not found in the database. Skipping.")
-                continue
+        # Fetch valid card and category IDs
+        valid_card_ids = {card.id for card in Card.query.all()}
+        valid_category_ids = {category.id for category in Category.query.all()}
 
-            # Track existing reward points for this card
-            existing_reward_points = {rp.category_id for rp in card.reward_points}
+        # Log fetched valid IDs for debugging
+        print(f"Valid card IDs: {valid_card_ids}")
+        print(f"Valid category IDs: {valid_category_ids}")
 
-            # Iterate through rewards
-            for reward_data in card_data.get("rewards", []):
-                category_name = reward_data.get("category")
-                if not category_name:
-                    print(f"Reward entry missing 'category' for card {card.name}. Skipping.")
-                    continue
+        # Validate reward point references and data integrity
+        invalid_entries = [
+            rp for rp in reward_points_data
+            if rp["card_id"] not in valid_card_ids
+            or rp["category_id"] not in valid_category_ids
+            or not isinstance(rp["bonus_point"], (int, float))
+            or rp["bonus_point"] <= 0
+        ]
 
-                # Ensure category exists or create it
-                category = Category.query.filter_by(name=category_name).first()
-                if not category:
-                    category = Category(name=category_name)
-                    db.session.add(category)
-                    db.session.commit()
+        if invalid_entries:
+            print("Invalid reward point references detected:")
+            for invalid in invalid_entries:
+                print(f"  {invalid}")
+            print("Skipping invalid entries.")
+            return
 
-                # Skip if the reward point already exists
-                if category.id in existing_reward_points:
-                    print(f"Reward point for category {category_name} already exists for card {card.name}. Skipping.")
-                    continue
+        # Remove duplicates by checking existing entries
+        existing_points = RewardPoint.query.with_entities(
+            RewardPoint.card_id, RewardPoint.category_id
+        ).all()
+        existing_set = {(ep[0], ep[1]) for ep in existing_points}
 
-                # Add new reward point
-                reward_point = RewardPoint(
-                    card_id=card.id,
-                    category_id=category.id,
-                    bonus_point=float(reward_data.get("points", 0)),  # Decimal compatibility
-                    multiplier_type=reward_data.get("type", "").strip()
-                )
-                db.session.add(reward_point)
+        new_entries = [
+            rp for rp in reward_points_data
+            if (rp["card_id"], rp["category_id"]) not in existing_set
+        ]
 
-        # Commit all changes to the database
+        if not new_entries:
+            print("No new reward points to insert.")
+            return
+
+        # Log new entries for debugging
+        print(f"New reward points to insert: {new_entries}")
+
+        # Prepare RewardPoint objects for bulk insert
+        reward_points_objects = [
+            RewardPoint(
+                card_id=rp["card_id"],
+                category_id=rp["category_id"],
+                bonus_point=rp["bonus_point"],
+                multiplier_type=rp["multiplier_type"].strip().capitalize()
+            ) for rp in new_entries
+        ]
+
+        # Bulk insert reward points
+        db.session.bulk_save_objects(reward_points_objects)
         db.session.commit()
         print("Reward points seeding completed successfully.")
+
     except Exception as e:
         print(f"An error occurred during seeding: {e}")
-        db.session.rollback()  # Rollback in case of errors
+        db.session.rollback()
 
 
 def undo_reward_points():
@@ -72,8 +639,11 @@ def undo_reward_points():
     Removes all reward points from the database and resets primary keys.
     """
     try:
-        # Check if the reward_points table exists in the schema
-        if not db.engine.dialect.has_table(db.engine, "reward_points", schema=SCHEMA if environment == "production" else None):
+        # Check if the `reward_points` table exists using the inspector
+        inspector = inspect(db.engine)
+        table_exists = inspector.has_table("reward_points", schema=SCHEMA if environment == "production" else None)
+
+        if not table_exists:
             print(f"The reward_points table does not exist in the schema {SCHEMA}. Skipping undo.")
             return
 
@@ -86,4 +656,4 @@ def undo_reward_points():
         print("Reward points table cleared successfully.")
     except Exception as e:
         print(f"An error occurred while clearing the reward points table: {e}")
-        db.session.rollback()  # Rollback in case of errors
+        db.session.rollback()
