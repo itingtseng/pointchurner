@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app.models import User, db
 from app.aws_helpers import remove_file_from_s3
@@ -78,6 +78,10 @@ def edit_current_user():
         current_user.lastname = form.lastname.data
         current_user.email = form.email.data
 
+        # If password is provided, update it
+        if form.password.data:
+            current_user.set_password(form.password.data)  # Assuming set_password hashes the password
+
         # Commit changes
         db.session.commit()
 
@@ -90,3 +94,29 @@ def edit_current_user():
         return {"errors": form.errors}, 400
 
     return {"errors": "Invalid request"}, 400
+
+
+@user_routes.route('/edit', methods=['GET', 'POST'])
+@login_required
+def edit_user_form():
+    """
+    Render and handle submission of the user profile edit form.
+    """
+    form = EditProfileForm(obj=current_user)  # Pre-fill the form with current user data
+
+    if form.validate_on_submit():
+        current_user.username = form.username.data
+        current_user.firstname = form.firstname.data
+        current_user.lastname = form.lastname.data
+        current_user.email = form.email.data
+
+        # If password is provided, update it
+        if form.password.data:
+            current_user.set_password(form.password.data)
+
+        db.session.commit()
+
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('user_routes.session_user'))
+
+    return render_template('edit_profile_form.html', form=form)

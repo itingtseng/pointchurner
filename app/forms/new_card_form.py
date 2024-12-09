@@ -2,16 +2,23 @@ from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField
 from wtforms.validators import DataRequired, Length
 
-class NewCardForm(FlaskForm):
+class AddCardToWalletForm(FlaskForm):
     card_id = SelectField(
-        'card_id',
-        choices=[],  # Choices will be populated dynamically from the database or API
+        'Card',
+        choices=[],  # Dynamically populated in the route
         validators=[
             DataRequired(message='Please select a card from the list.')
         ]
     )
+    wallet_id = SelectField(
+        'Wallet',
+        choices=[],  # Dynamically populated in the route
+        validators=[
+            DataRequired(message='Please select a wallet.')
+        ]
+    )
     network = SelectField(
-        'network',
+        'Network',
         choices=[
             ('VISA', 'Visa'),
             ('MASTERCARD', 'MasterCard'),
@@ -24,7 +31,7 @@ class NewCardForm(FlaskForm):
         ]
     )
     nickname = StringField(
-        'nickname',
+        'Nickname',
         validators=[
             DataRequired(message='Please enter a nickname for the card.'),
             Length(max=50, message='Nickname must be less than 50 characters.')
