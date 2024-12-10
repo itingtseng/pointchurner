@@ -15,8 +15,7 @@ def all_categories():
         {
             "id": category.id,
             "name": category.name,
-            "createdAt": category.createdAt,
-            "updatedAt": category.updatedAt
+            "parent_category_id": category.parent_category_id
         }
         for category in categories
     ]
@@ -35,7 +34,6 @@ def get_category(categoryId):
     category_details = {
         "id": category.id,
         "name": category.name,
-        "createdAt": category.createdAt,
-        "updatedAt": category.updatedAt
+        "parent_category_id": category.parent_category_id
     }
     return jsonify(category_details)

@@ -84,11 +84,18 @@ def api_help():
 def react_root(path):
     """
     This route will direct to the public directory in our
-    react builds in the production environment for favicon
-    or index.html requests
+    React builds in the production environment for favicon
+    or index.html requests.
     """
+    # Serve API error for unmatched API paths
+    if path.startswith('api/'):
+        return {"message": "API route not found"}, 404
+    
+    # Serve favicon
     if path == 'favicon.ico':
         return app.send_from_directory('public', 'favicon.ico')
+    
+    # Serve React app for other paths
     return app.send_static_file('index.html')
 
 

@@ -1,16 +1,23 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Wallet, Card, db
+from app.models import Wallet, WalletCard, Card, db
 
 wallet_routes = Blueprint('wallets', __name__)
 
-# Get the current user's wallet and associated cards
-@wallet_routes.route('/')
+# Get wallet by ID (Optional: Ensure the wallet belongs to the current user)
+@wallet_routes.route('/<int:wallet_id>', methods=["GET"])
 @login_required
-def get_wallet():
-    wallet = Wallet.query.filter_by(userId=current_user.id).first()
+def get_wallet_by_id(wallet_id):
+    """
+    Retrieve a wallet by its ID and associated cards.
+    """
+    wallet = Wallet.query.get(wallet_id)
     if not wallet:
         return {"message": "Wallet not found!"}, 404
+
+    # Optional: Ensure the wallet belongs to the current user
+    if wallet.user_id != current_user.id:
+        return {"message": "Unauthorized access to this wallet"}, 403
 
     wallet_details = {
         "id": wallet.id,
@@ -18,16 +25,46 @@ def get_wallet():
             {
                 "id": card.id,
                 "name": card.name,
-                "nickname": card.nickname,
-                "network": card.network,
+                "nickname": wallet_card.nickname,
+                "network": wallet_card.network,
                 "issuer": card.issuer,
-                "imageUrl": card.image_url,
+                "image_url": card.image_url,
                 "url": card.url,
             }
-            for card in wallet.cards
+            for wallet_card in wallet.wallet_cards
+            for card in [wallet_card.card]
         ],
     }
-    return jsonify(wallet_details)
+    return jsonify(wallet_details), 200
+
+# Get details of a specific card in a wallet
+@wallet_routes.route('/<int:wallet_id>/cards/<int:card_id>', methods=["GET"])
+@login_required
+def get_card_in_wallet(wallet_id, card_id):
+    """
+    Get details of a specific card in a wallet by wallet ID and card ID.
+    """
+    wallet = Wallet.query.get(wallet_id)
+    if not wallet:
+        return {"message": "Wallet not found!"}, 404
+
+    # Ensure the wallet belongs to the current user
+    if wallet.user_id != current_user.id:
+        return {"message": "Unauthorized access to this wallet"}, 403
+
+    wallet_card = WalletCard.query.filter_by(wallet_id=wallet.id, card_id=card_id).first()
+    if not wallet_card:
+        return {"message": "Card not found in this wallet!"}, 404
+
+    return jsonify({
+        "id": wallet_card.card.id,
+        "name": wallet_card.card.name,
+        "nickname": wallet_card.nickname,
+        "network": wallet_card.network,
+        "issuer": wallet_card.card.issuer,
+        "image_url": wallet_card.card.image_url,
+        "url": wallet_card.card.url,
+    }), 200
 
 # Add a card to the user's wallet
 @wallet_routes.route('/cards', methods=["POST"])
@@ -37,16 +74,18 @@ def add_card():
     Add a card to the user's wallet.
     """
     data = request.json
-    if not data or not data.get("card_id") or not data.get("nickname") or not data.get("network"):
+
+    # Validate input data
+    if not data or not all(key in data for key in ["card_id", "nickname", "network"]):
         return {"message": "Invalid input data"}, 400
 
-    wallet = Wallet.query.filter_by(userId=current_user.id).first()
+    wallet = Wallet.query.filter_by(user_id=current_user.id).first()
     if not wallet:
         return {"message": "Wallet not found!"}, 404
 
     # Check if the card already exists in the wallet
-    existing_card = Card.query.filter_by(id=data["card_id"], walletId=wallet.id).first()
-    if existing_card:
+    existing_wallet_card = WalletCard.query.filter_by(wallet_id=wallet.id, card_id=data["card_id"]).first()
+    if existing_wallet_card:
         return {"message": "Card already exists in wallet!"}, 409
 
     # Check if the card exists in the database
@@ -55,52 +94,53 @@ def add_card():
         return {"message": "Card not found!"}, 404
 
     # Add the card to the wallet
-    card.walletId = wallet.id
-    card.nickname = data["nickname"]
-    card.network = data["network"]
-    db.session.commit()
+    WalletCard.create_wallet_card(wallet.id, data["card_id"], data["nickname"], data["network"])
 
-    return jsonify(card.to_dict()), 201
+    return jsonify({"message": "Card added to wallet successfully!"}), 201
 
 # Update card details in the wallet
-@wallet_routes.route('/cards/<int:cardId>', methods=["PUT"])
+@wallet_routes.route('/cards/<int:card_id>', methods=["PUT"])
 @login_required
-def update_card(cardId):
+def update_card(card_id):
     """
     Update card details in the wallet.
     """
-    wallet = Wallet.query.filter_by(userId=current_user.id).first()
+    wallet = Wallet.query.filter_by(user_id=current_user.id).first()
     if not wallet:
         return {"message": "Wallet not found!"}, 404
 
-    card = Card.query.filter_by(id=cardId, walletId=wallet.id).first()
-    if not card:
+    wallet_card = WalletCard.query.filter_by(wallet_id=wallet.id, card_id=card_id).first()
+    if not wallet_card:
         return {"message": "Card not found in wallet!"}, 404
 
     data = request.json
-    card.nickname = data.get("nickname", card.nickname)
-    card.network = data.get("network", card.network)
+    if not data:
+        return {"message": "No data provided for update"}, 400
+
+    # Update wallet card details
+    wallet_card.nickname = data.get("nickname", wallet_card.nickname)
+    wallet_card.network = data.get("network", wallet_card.network)
     db.session.commit()
 
-    return jsonify(card.to_dict()), 200
+    return jsonify(wallet_card.to_dict()), 200
 
 # Remove a card from the wallet
-@wallet_routes.route('/cards/<int:cardId>', methods=["DELETE"])
+@wallet_routes.route('/cards/<int:card_id>', methods=["DELETE"])
 @login_required
-def remove_card(cardId):
+def remove_card(card_id):
     """
     Remove a card from the wallet.
     """
-    wallet = Wallet.query.filter_by(userId=current_user.id).first()
+    wallet = Wallet.query.filter_by(user_id=current_user.id).first()
     if not wallet:
         return {"message": "Wallet not found!"}, 404
 
-    card = Card.query.filter_by(id=cardId, walletId=wallet.id).first()
-    if not card:
+    wallet_card = WalletCard.query.filter_by(wallet_id=wallet.id, card_id=card_id).first()
+    if not wallet_card:
         return {"message": "Card not found in wallet!"}, 404
 
-    # Remove association with the wallet
-    card.walletId = None
+    # Remove the wallet card
+    db.session.delete(wallet_card)
     db.session.commit()
 
     return {"message": "Card successfully removed from wallet"}, 200

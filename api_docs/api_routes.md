@@ -204,6 +204,9 @@
 - **Route path**: `/api/cards/:cardId`  
 - **Authentication**: False  
 
+- **Parameters**:
+  - `card_id` (int): The ID of the card within the wallet.
+
 - **Responses**:
   - **200**: Card details.
   - **Body**:
@@ -275,6 +278,45 @@
   
   - **401**: Unauthorized
   - **404**: User not found
+
+---
+
+### **Get Card Details in Wallet**
+
+- **Method**: GET  
+- **Route path**: `/api/wallet/<wallet_id>/cards/<card_id>`  
+- **Authentication**: True  
+
+- **Parameters**:
+  - `wallet_id` (int): The ID of the wallet.
+  - `card_id` (int): The ID of the card within the wallet.
+
+- **Responses**:
+  - **200**: Card details in the specified wallet.
+    - **Body**:
+      ```json
+      {
+        "card_id": 1,
+        "wallet_id": 1,
+        "name": "Blue Business Cash",
+        "issuer": "AMERICAN_EXPRESS",
+        "image_url": "/images/amex/blue-business-cash.webp",
+        "url": "https://www.americanexpress.com/us/credit-cards/card/blue-cash-everyday/",
+        "nickname": "BBC",
+        "network": "AMERICAN_EXPRESS",
+        "reward_points": [
+          {
+            "category_id": 1,
+            "bonus_point": 1,
+            "multiplier_type": "%"
+          }
+          // more categories...
+        ]
+      }
+      ```
+  - **401**: Unauthorized access.
+  - **403**: Unauthorized access to the wallet.
+  - **404**: Wallet or card not found.
 
 ---
 
@@ -386,6 +428,31 @@
 
 ---
 
+### **View Category Details**
+
+- **Method**: GET  
+- **Route path**: `/api/categories/:categoryId`  
+- **Authentication**: False
+
+- **Parameters**:
+  - `ccategoryId` (int): The ID of the category.
+
+- **Responses**:
+  - **200**: Category details.
+  - **Body**:
+
+  ```json
+        {
+          "id": 1,
+          "name": "dining",
+          "parent_categories_id": 1,
+        }
+    ```
+
+    - **404**: Category not found.
+
+---
+
 ## **Spending**
 
 ### **View Spending**
@@ -413,6 +480,33 @@
     ```
 
   - **404**: Spending profile not found.
+
+---
+
+### **Get Category Details in Spending**
+
+- **Method**: GET  
+- **Route path**: `/api/spendings/<spending_id>/categories/<category_id>`  
+- **Authentication**: True  
+
+- **Parameters**:
+  - `spending_id` (int): The ID of the spending.
+  - `category_id` (int): The ID of the category within the spending.
+
+- **Responses**:
+  - **200**: Category details in the specified spending.
+    - **Body**:
+      ```json
+      {
+        "category_id": 2,
+        "spending_id": 1,
+        "name": "Dining",
+        "parent_categories_id": null
+      }
+      ```
+  - **401**: Unauthorized access.
+  - **403**: Unauthorized access to the spending.
+  - **404**: Spending or category not found.
 
 ---
 

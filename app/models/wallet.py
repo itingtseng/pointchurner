@@ -27,6 +27,13 @@ class Wallet(db.Model):
         lazy='joined'
     )
 
+    @property
+    def cards(self):
+        """
+        Returns the list of Card objects associated with this wallet.
+        """
+        return [wallet_card.card for wallet_card in self.wallet_cards]
+
     def to_dict(self, include_wallet_cards=True):
         """
         Returns a dictionary representation of a Wallet instance.
