@@ -1,7 +1,6 @@
 from app.models.db import db, environment, SCHEMA
 from ..utils import add_prefix_for_prod
 
-
 class Card(db.Model):
     __tablename__ = 'cards'
 
@@ -11,8 +10,8 @@ class Card(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     issuer = db.Column(db.String(255), nullable=False)
-    image_url = db.Column(db.String(255), nullable=True)  # Optional if not always required
-    url = db.Column(db.String(255), nullable=True)  # Optional if not always required
+    image_url = db.Column(db.String(255), nullable=True)
+    url = db.Column(db.String(255), nullable=True)
 
     # Relationships
     reward_points = db.relationship(
@@ -29,11 +28,6 @@ class Card(db.Model):
     )
 
     def to_dict(self, include_wallet_cards=False):
-        """
-        Returns a dictionary representation of a Card instance.
-
-        :param include_wallet_cards: If True, includes details of the associated wallet cards.
-        """
         card_dict = {
             'id': self.id,
             'name': self.name,
@@ -50,14 +44,6 @@ class Card(db.Model):
 
     @staticmethod
     def create_card(name, issuer, image_url=None, url=None):
-        """
-        Creates a new card instance and saves it to the database.
-
-        :param name: Name of the card.
-        :param issuer: Issuer of the card.
-        :param image_url: Optional URL for the card's image.
-        :param url: Optional URL for more card details.
-        """
         card = Card(
             name=name,
             issuer=issuer,

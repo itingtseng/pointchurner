@@ -1,16 +1,15 @@
 from flask import Blueprint, jsonify, request, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from app.models import User, db
+from app.models import User, Wallet, db
 from app.aws_helpers import remove_file_from_s3
 from app.forms import EditProfileForm
 
 user_routes = Blueprint('users', __name__)
 
-
 @user_routes.route('/')
 def users():
     """
-    Query for all users and return them in a list of user dictionaries
+    Query for all users and return them in a list of user dictionaries.
     """
     users = User.query.all()
     return {'users': [user.to_dict() for user in users]}
@@ -19,7 +18,7 @@ def users():
 @user_routes.route('/<int:id>')
 def user(id):
     """
-    Query for a user by id and return that user in a dictionary
+    Query for a user by ID and return that user in a dictionary.
     """
     user = User.query.get(id)
     if not user:
@@ -29,12 +28,21 @@ def user(id):
 
 @user_routes.route('/session')
 @login_required
-def session_user():
+def sessionUser():
     """
-    Query for the currently authenticated user and return their information
+    Query for the currently authenticated user and return their information,
+    including wallet ID if available.
     """
     if current_user.is_authenticated:
-        return current_user.to_dict()
+        user_data = current_user.to_dict()
+
+        # Attach wallet ID if the user has a wallet
+        wallet = Wallet.query.filter_by(user_id=current_user.id).first()
+        user_data['wallet_id'] = wallet.id if wallet else None
+
+        print("Session user data being returned:", user_data)  # Debug log
+        return jsonify(user_data), 200
+
     return {'errors': {'message': 'Unauthorized'}}, 401
 
 
@@ -42,7 +50,7 @@ def session_user():
 @login_required
 def delete_current_user():
     """
-    Delete the currently authenticated user and associated resources
+    Delete the currently authenticated user and associated resources.
     """
     user = User.query.get(current_user.id)
 
@@ -66,7 +74,7 @@ def delete_current_user():
 @login_required
 def edit_current_user():
     """
-    Edit the profile of the currently authenticated user
+    Edit the profile of the currently authenticated user.
     """
     form = EditProfileForm()
     form["csrf_token"].data = request.cookies.get("csrf_token")
@@ -80,7 +88,7 @@ def edit_current_user():
 
         # If password is provided, update it
         if form.password.data:
-            current_user.set_password(form.password.data)  # Assuming set_password hashes the password
+            current_user.set_password(form.password.data)
 
         # Commit changes
         db.session.commit()
@@ -88,12 +96,10 @@ def edit_current_user():
         return {
             "message": "Profile updated successfully.",
             "user": current_user.to_dict()
-        }
+        }, 200
 
-    if form.errors:
-        return {"errors": form.errors}, 400
-
-    return {"errors": "Invalid request"}, 400
+    # Handle validation errors
+    return {"errors": form.errors}, 400
 
 
 @user_routes.route('/edit', methods=['GET', 'POST'])
@@ -105,18 +111,35 @@ def edit_user_form():
     form = EditProfileForm(obj=current_user)  # Pre-fill the form with current user data
 
     if form.validate_on_submit():
+        # Reuse logic from `edit_current_user`
         current_user.username = form.username.data
         current_user.firstname = form.firstname.data
         current_user.lastname = form.lastname.data
         current_user.email = form.email.data
 
-        # If password is provided, update it
+        # Update password if provided
         if form.password.data:
             current_user.set_password(form.password.data)
 
         db.session.commit()
 
         flash("Profile updated successfully!", "success")
-        return redirect(url_for('user_routes.session_user'))
+        return redirect(url_for('user_routes.sessionUser'))
 
     return render_template('edit_profile_form.html', form=form)
+
+
+@user_routes.route('/wallet/<int:user_id>')
+@login_required
+def get_user_wallet(user_id):
+    """
+    Retrieve the wallet for a specific user by ID.
+    """
+    if current_user.id != user_id:
+        return {"errors": "Unauthorized access"}, 403
+
+    wallet = Wallet.query.filter_by(user_id=user_id).first()
+    if not wallet:
+        return {"message": "Wallet not found"}, 404
+
+    return {"wallet_id": wallet.id, "balance": wallet.balance}, 200

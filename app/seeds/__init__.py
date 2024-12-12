@@ -7,6 +7,7 @@ from .spendings import seed_spendings, undo_spendings
 from .reward_points import seed_reward_points, undo_reward_points
 from .spending_categories import seed_spending_categories, undo_spending_categories
 from .wallet_cards import seed_wallet_cards, undo_wallet_cards
+from .images import update_card_images  # Import the image seeder
 
 from app.models.db import db, environment, SCHEMA
 
@@ -32,6 +33,7 @@ def seed():
     seed_users()
     seed_categories()
     seed_cards()
+    update_card_images()  # Update image URLs after seeding cards
     seed_wallets()
     seed_reward_points()
     seed_spendings()

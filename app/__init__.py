@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, session, redirect
+from flask import Flask, render_template, request, session, redirect, send_from_directory, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf
@@ -29,18 +29,27 @@ def load_user(id):
 # Tell flask about our seed commands
 app.cli.add_command(seed_commands)
 
+# Configuration
 app.config.from_object(Config)
+
+# Register Blueprints
 app.register_blueprint(user_routes, url_prefix='/api/users')
 app.register_blueprint(auth_routes, url_prefix='/api/auth')
 app.register_blueprint(card_routes, url_prefix='/api/cards')
-app.register_blueprint(wallet_routes, url_prefix='/api/wallet')
+app.register_blueprint(wallet_routes, url_prefix='/api/wallets')
 app.register_blueprint(category_routes, url_prefix='/api/categories')
 app.register_blueprint(spending_routes, url_prefix='/api/spending')
+
+# Initialize extensions
 db.init_app(app)
 Migrate(app, db)
-
-# Application Security
 CORS(app)
+
+# Serve static files from the seed-images directory
+@app.route('/seed-images/<filename>')
+def serve_image(filename):
+    seed_images_path = os.path.join(os.path.dirname(__file__), '../seed-images')
+    return send_from_directory(seed_images_path, filename)
 
 
 # Redirect HTTP to HTTPS in production
@@ -49,8 +58,7 @@ def https_redirect():
     if os.environ.get('FLASK_ENV') == 'production':
         if request.headers.get('X-Forwarded-Proto') == 'http':
             url = request.url.replace('http://', 'https://', 1)
-            code = 301
-            return redirect(url, code=code)
+            return redirect(url, code=301)
 
 
 # Add CSRF token to cookies
@@ -59,11 +67,12 @@ def inject_csrf_token(response):
     response.set_cookie(
         'csrf_token',
         generate_csrf(),
-        secure=True if os.environ.get('FLASK_ENV') == 'production' else False,
-        samesite='Strict' if os.environ.get(
-            'FLASK_ENV') == 'production' else None,
-        httponly=True)
+        secure=os.environ.get('FLASK_ENV') == 'production',
+        samesite='Strict' if os.environ.get('FLASK_ENV') == 'production' else None,
+        httponly=True
+    )
     return response
+
 
 # API Documentation Route
 @app.route("/api/docs")
@@ -72,10 +81,15 @@ def api_help():
     Returns all API routes and their doc strings
     """
     acceptable_methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-    route_list = {rule.rule: [[method for method in rule.methods if method in acceptable_methods],
-                              app.view_functions[rule.endpoint].__doc__]
-                  for rule in app.url_map.iter_rules() if rule.endpoint != 'static'}
-    return route_list
+    route_list = {
+        rule.rule: [
+            [method for method in rule.methods if method in acceptable_methods],
+            app.view_functions[rule.endpoint].__doc__
+        ]
+        for rule in app.url_map.iter_rules()
+        if rule.endpoint != 'static'
+    }
+    return jsonify(route_list)
 
 
 # Serve React Frontend
@@ -83,23 +97,30 @@ def api_help():
 @app.route('/<path:path>')
 def react_root(path):
     """
-    This route will direct to the public directory in our
-    React builds in the production environment for favicon
-    or index.html requests.
+    Serve the React app for non-API paths
     """
-    # Serve API error for unmatched API paths
     if path.startswith('api/'):
         return {"message": "API route not found"}, 404
     
-    # Serve favicon
     if path == 'favicon.ico':
-        return app.send_from_directory('public', 'favicon.ico')
+        return send_from_directory('public', 'favicon.ico')
     
-    # Serve React app for other paths
     return app.send_static_file('index.html')
 
 
 # Handle 404 errors by serving the React app
 @app.errorhandler(404)
 def not_found(e):
+    if request.path.startswith('/api/'):
+        return {"message": "API route not found"}, 404
     return app.send_static_file('index.html')
+
+
+# Global Error Handler
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """
+    Handle unexpected server errors
+    """
+    response = {"message": str(e)}
+    return jsonify(response), 500

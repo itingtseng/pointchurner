@@ -4,20 +4,14 @@ from app.models import Wallet, WalletCard, Card, db
 
 wallet_routes = Blueprint('wallets', __name__)
 
-# Get wallet by ID (Optional: Ensure the wallet belongs to the current user)
-@wallet_routes.route('/<int:wallet_id>', methods=["GET"])
+@wallet_routes.route('/session', methods=["GET"])
 @login_required
-def get_wallet_by_id(wallet_id):
-    """
-    Retrieve a wallet by its ID and associated cards.
-    """
-    wallet = Wallet.query.get(wallet_id)
+def get_current_user_wallet():
+    print(f"Fetching wallet for user ID: {current_user.id}")  # Debugging log
+    wallet = Wallet.query.filter_by(user_id=current_user.id).first()
     if not wallet:
+        print("Wallet not found.")  # Debugging log
         return {"message": "Wallet not found!"}, 404
-
-    # Optional: Ensure the wallet belongs to the current user
-    if wallet.user_id != current_user.id:
-        return {"message": "Unauthorized access to this wallet"}, 403
 
     wallet_details = {
         "id": wallet.id,
@@ -35,7 +29,12 @@ def get_wallet_by_id(wallet_id):
             for card in [wallet_card.card]
         ],
     }
+    print(f"Wallet details: {wallet_details}")  # Debugging log
     return jsonify(wallet_details), 200
+
+
+
+
 
 # Get details of a specific card in a wallet
 @wallet_routes.route('/<int:wallet_id>/cards/<int:card_id>', methods=["GET"])

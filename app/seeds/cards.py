@@ -1,24 +1,29 @@
 from app.models import db, Card, RewardPoint, Category, environment, SCHEMA
-import requests
 from sqlalchemy.sql import text
+import requests
+
 
 def seed_cards():
     """
     Seeds initial cards into the database, including associated reward points and categories.
+    Updates the image_url field for each card using local images.
     """
+    # Fetch card data from the remote JSON
     url = "https://raw.githubusercontent.com/andenacitelli/credit-card-bonuses-api/main/exports/data.json"
     response = requests.get(url)
     if response.status_code != 200:
         raise Exception(f"Failed to fetch data from {url}. Status code: {response.status_code}")
-    
+
     data = response.json()
 
-    for card_data in data:
+    for idx, card_data in enumerate(data, start=1):
         # Safely handle fields
         name = card_data.get("name", "Unknown Card")
         issuer = card_data.get("issuer", "Unknown Issuer")
         card_url = card_data.get("url", "")
-        image_url = card_data.get("image_url", "")
+
+        # Use local images based on the card ID
+        image_url = f"/seed-images/{idx}.png"
 
         # Create Card
         card = Card(

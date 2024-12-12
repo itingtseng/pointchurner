@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from app.models import Card, Wallet, db
+from app.models import Card, Wallet, RewardPoint, Category, db
 from app.forms import AddCardToWalletForm, EditCardForm
 
 card_routes = Blueprint('cards', __name__)
@@ -36,6 +36,7 @@ def get_card(cardId):
     if not card:
         return {"message": "Card not found!"}, 404
 
+    # Build the card details including category names
     card_details = {
         "id": card.id,
         "name": card.name,
@@ -44,7 +45,7 @@ def get_card(cardId):
         "url": card.url,
         "reward_points": [
             {
-                "category_id": reward.category_id,
+                "category_name": reward.category.name,  # Get category name
                 "bonus_point": reward.bonus_point,
                 "multiplier_type": reward.multiplier_type
             }
