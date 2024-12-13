@@ -38,7 +38,7 @@ app.register_blueprint(auth_routes, url_prefix='/api/auth')
 app.register_blueprint(card_routes, url_prefix='/api/cards')
 app.register_blueprint(wallet_routes, url_prefix='/api/wallets')
 app.register_blueprint(category_routes, url_prefix='/api/categories')
-app.register_blueprint(spending_routes, url_prefix='/api/spending')
+app.register_blueprint(spending_routes, url_prefix='/api/spendings')
 
 # Initialize extensions
 db.init_app(app)

@@ -5,6 +5,7 @@ import Layout from './Layout';
 import HomePage from '../components/Home/homepage';
 import CardDetail from '../components/Card/CardDetail';
 import Wallet from '../components/Wallet/Wallet';
+import Spending from '../components/Spending/Spending'; 
 
 export const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ export const router = createBrowserRouter([
       {
         path: "wallets/:walletId",
         element: <Wallet />,
+      },
+      {
+        path: "spendings/:spendingId",
+        element: <Spending />,
       },
     ],
   },

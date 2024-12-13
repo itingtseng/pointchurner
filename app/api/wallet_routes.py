@@ -4,6 +4,7 @@ from app.models import Wallet, WalletCard, Card, db
 
 wallet_routes = Blueprint('wallets', __name__)
 
+# Get current user's wallet profile
 @wallet_routes.route('/session', methods=["GET"])
 @login_required
 def get_current_user_wallet():
@@ -31,10 +32,6 @@ def get_current_user_wallet():
     }
     print(f"Wallet details: {wallet_details}")  # Debugging log
     return jsonify(wallet_details), 200
-
-
-
-
 
 # Get details of a specific card in a wallet
 @wallet_routes.route('/<int:wallet_id>/cards/<int:card_id>', methods=["GET"])
@@ -101,9 +98,6 @@ def add_card():
 @wallet_routes.route('/cards/<int:card_id>', methods=["PUT"])
 @login_required
 def update_card(card_id):
-    """
-    Update card details in the wallet.
-    """
     wallet = Wallet.query.filter_by(user_id=current_user.id).first()
     if not wallet:
         return {"message": "Wallet not found!"}, 404
@@ -116,12 +110,12 @@ def update_card(card_id):
     if not data:
         return {"message": "No data provided for update"}, 400
 
-    # Update wallet card details
     wallet_card.nickname = data.get("nickname", wallet_card.nickname)
     wallet_card.network = data.get("network", wallet_card.network)
     db.session.commit()
 
     return jsonify(wallet_card.to_dict()), 200
+
 
 # Remove a card from the wallet
 @wallet_routes.route('/cards/<int:card_id>', methods=["DELETE"])

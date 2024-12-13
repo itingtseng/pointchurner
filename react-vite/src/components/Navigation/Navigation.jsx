@@ -8,13 +8,10 @@ import logo from "../../../src/logo.png";
 import "./Navigation.css";
 
 function Navigation() {
-  const user = useSelector((store) => {
-    console.log("Redux state session.user:", store.session.user); // Debug log
-    return store.session.user;
-  });
+  const user = useSelector((store) => store.session.user);
+
   const walletPath = user?.wallet_id ? `/wallets/${user.wallet_id}` : "/";
-  console.log("Navigating to:", walletPath);
-  
+  const spendingPath = user?.spending_id ? `/spendings/${user.spending_id}` : "/";
 
   return (
     <nav className="navigation">
@@ -28,12 +25,13 @@ function Navigation() {
           {user ? (
             <>
               <li>
-                <NavLink
-                  to={walletPath}
-                  className="wallet-link"
-                  onClick={() => console.log("Navigating to:", walletPath)}
-                >
+                <NavLink to={walletPath} className="wallet-link">
                   My Wallet
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to={spendingPath} className="spending-link">
+                  My Spending
                 </NavLink>
               </li>
               <li>

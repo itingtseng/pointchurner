@@ -4,16 +4,16 @@ const REMOVE_USER = "session/removeUser";
 
 // Action creator for setting the user
 const setUser = (user) => {
-  console.log("Setting user with wallet_id:", user.wallet_id); // Debug user payload
+  console.log("Setting user with wallet_id and spending_id:", user.wallet_id, user.spending_id); // Debug user payload
   return {
     type: SET_USER,
     payload: {
       ...user,
       wallet_id: user.wallet_id || null,
+      spending_id: user.spending_id || null, // Ensure spending_id is handled
     },
   };
 };
-
 
 // Action creator for removing the user
 const removeUser = () => ({
@@ -44,7 +44,6 @@ export const thunkAuthenticate = () => async (dispatch) => {
     console.error("Error authenticating session user:", error);
   }
 };
-
 
 // Thunk for logging in a user
 export const thunkLogin = (credentials) => async (dispatch) => {
@@ -115,7 +114,6 @@ export const fetchSessionUser = () => async (dispatch) => {
     console.error("Error fetching session user:", error);
   }
 };
-
 
 // Initial state
 const initialState = { user: null };

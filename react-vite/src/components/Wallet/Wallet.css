@@ -50,3 +50,295 @@
     color: #555;
   }
   
+  /* Add Card Button */
+.add-card-button {
+  background-color: #007bff; /* Primary blue color */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.add-card-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Add New Card Form */
+.add-card-form {
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9; /* Light gray background */
+  padding: 20px;
+  border: 1px solid #ddd; /* Light gray border */
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px; /* Limit form width */
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.add-card-form label {
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.add-card-form input,
+.add-card-form select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.add-card-form button {
+  background-color: #28a745; /* Green color */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-card-form button:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .add-card-form {
+    width: 90%; /* Adjust form width for smaller screens */
+  }
+
+  .add-card-button {
+    width: 100%; /* Make button span full width on smaller screens */
+  }
+}
+
+/* Edit Card Form */
+.edit-card-form {
+  margin-top: 10px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-card-form label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.edit-card-form input,
+.edit-card-form select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  font-size: 14px;
+}
+
+.edit-card-form button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.edit-card-form button:hover {
+  background-color: #0056b3;
+}
+
+.edit-card-form button[type="button"] {
+  background-color: #dc3545;
+}
+
+.edit-card-form button[type="button"]:hover {
+  background-color: #a71d2a;
+}
+
+/* Modal Background */
+.confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it overlays other elements */
+}
+
+/* Modal Content */
+.modal-content {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%; /* Responsive width */
+  animation: fadeIn 0.3s ease-in-out; /* Optional animation */
+}
+
+/* Modal Background */
+.confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it overlays other elements */
+}
+
+/* Modal Content */
+.modal-content {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%; /* Responsive width */
+  animation: fadeIn 0.3s ease-in-out; /* Optional animation */
+}
+
+/* Modal Title */
+.modal-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+/* Modal Buttons Container */
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+/* Buttons */
+.modal-buttons button {
+  margin: 0 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Confirm Button */
+.modal-buttons .confirm {
+  background-color: #ff4d4f; /* Red for confirm */
+  color: white;
+}
+
+.modal-buttons .confirm:hover {
+  background-color: #ff7875; /* Lighter red on hover */
+}
+
+/* Cancel Button */
+.modal-buttons .cancel {
+  background-color: #ddd; /* Neutral for cancel */
+  color: black;
+}
+
+.modal-buttons .cancel:hover {
+  background-color: #bbb; /* Darker neutral on hover */
+}
+
+/* Optional fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.edit-button {
+  background-color: #4caf50; /* Green */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.edit-button:hover {
+  background-color: #45a049;
+}
+
+.remove-button {
+  background-color: #f44336; /* Red */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.remove-button:hover {
+  background-color: #e53935;
+}
+
+button.cancel-button {
+  background-color: #b0b0b0; /* Light gray */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+button.cancel-button:hover {
+  background-color: #8c8c8c; /* Darker gray for hover effect */
+}
+
+/* Error styling for input */
+.error-input {
+  border: 2px solid red;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+

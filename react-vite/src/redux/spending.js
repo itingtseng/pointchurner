@@ -1,118 +1,106 @@
 // Action Types
-const LOAD_ALL_SPENDINGS = 'spendings/load_all_spendings';
-const LOAD_SPENDING_BY_ID = 'spendings/load_spending_by_id';
-const CREATE_SPENDING = 'spendings/create_spending';
-const UPDATE_SPENDING = 'spendings/update_spending';
-const DELETE_SPENDING = 'spendings/delete_spending';
+const LOAD_USER_SPENDING = "spendings/load_user_spending";
+const ADD_CATEGORY_TO_SPENDING = "spendings/add_category_to_spending";
+const REMOVE_CATEGORY_FROM_SPENDING = "spendings/remove_category_from_spending";
 
 // Action Creators
-export const loadAllSpendings = (spendings) => ({ type: LOAD_ALL_SPENDINGS, spendings });
-export const loadSpendingById = (spending) => ({ type: LOAD_SPENDING_BY_ID, spending });
-export const createSpending = (spending) => ({ type: CREATE_SPENDING, spending });
-export const updateSpending = (spending) => ({ type: UPDATE_SPENDING, spending });
-export const deleteSpending = (spendingId) => ({ type: DELETE_SPENDING, spendingId });
+export const loadUserSpending = (spending) => ({
+  type: LOAD_USER_SPENDING,
+  spending,
+});
+
+export const addCategoryToSpending = (category) => ({
+  type: ADD_CATEGORY_TO_SPENDING,
+  category,
+});
+
+export const removeCategoryFromSpending = (categoryId) => ({
+  type: REMOVE_CATEGORY_FROM_SPENDING,
+  categoryId,
+});
 
 // Thunks
-export const thunkGetAllSpendings = () => async (dispatch) => {
-  const res = await fetch('/api/spendings');
-  if (res.ok) {
+export const thunkGetUserSpending = () => async (dispatch) => {
+  try {
+    const res = await fetch("/api/spendings/session");
+    if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
-    dispatch(loadAllSpendings(data.spendings));
-  } else {
-    console.error('Failed to fetch all spendings');
+    dispatch(loadUserSpending(data));
+  } catch (error) {
+    console.error("Error fetching user's spending:", error);
+    throw error;
   }
 };
 
-export const thunkGetSpendingById = (spendingId) => async (dispatch) => {
-  const res = await fetch(`/api/spendings/${spendingId}`);
-  if (res.ok) {
-    const data = await res.json();
-    dispatch(loadSpendingById(data));
-  } else {
-    console.error(`Failed to fetch spending with ID: ${spendingId}`);
+export const thunkAddCategoryToSpending = (categoryData) => async (dispatch) => {
+  try {
+    const res = await fetch('/api/spendings/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(categoryData),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      // Update Redux with the added category
+      dispatch(addCategoryToSpending(data));
+      // Fetch the updated spending profile
+      await dispatch(thunkGetUserSpending());
+    } else {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to add category to spending');
+    }
+  } catch (error) {
+    console.error('Error adding category to spending:', error);
+    throw error;
   }
 };
 
-export const thunkCreateSpending = (spending) => async (dispatch) => {
-  const res = await fetch('/api/spendings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(spending),
-  });
-  if (res.ok) {
-    const data = await res.json();
-    dispatch(createSpending(data));
-  } else {
-    console.error('Failed to create spending');
-  }
-};
 
-export const thunkUpdateSpending = (spending) => async (dispatch) => {
-  const res = await fetch(`/api/spendings/${spending.id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(spending),
-  });
-  if (res.ok) {
-    const data = await res.json();
-    dispatch(updateSpending(data));
-  } else {
-    console.error(`Failed to update spending with ID: ${spending.id}`);
-  }
-};
 
-export const thunkDeleteSpending = (spendingId) => async (dispatch) => {
-  const res = await fetch(`/api/spendings/${spendingId}`, {
-    method: 'DELETE',
-  });
-  if (res.ok) {
-    dispatch(deleteSpending(spendingId));
-  } else {
-    console.error(`Failed to delete spending with ID: ${spendingId}`);
+
+export const thunkRemoveCategoryFromSpending = (categoryId) => async (dispatch) => {
+  try {
+    const res = await fetch(`/api/spendings/categories/${categoryId}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error(await res.text());
+    dispatch(removeCategoryFromSpending(categoryId));
+  } catch (error) {
+    console.error("Error removing category from spending:", error);
+    throw error;
   }
 };
 
 // Reducer
-const initialState = { allSpendings: {}, singleSpending: null };
+const initialState = { singleSpending: null };
 
 function spendingReducer(state = initialState, action) {
   switch (action.type) {
-    case LOAD_ALL_SPENDINGS: {
-      const allSpendings = {};
-      action.spendings.forEach((spending) => {
-        allSpendings[spending.id] = spending;
-      });
-      return { ...state, allSpendings };
-    }
-    case LOAD_SPENDING_BY_ID: {
+    case LOAD_USER_SPENDING:
       return { ...state, singleSpending: action.spending };
-    }
-    case CREATE_SPENDING: {
+    case ADD_CATEGORY_TO_SPENDING:
+      if (!state.singleSpending) return state;
       return {
         ...state,
-        allSpendings: {
-          ...state.allSpendings,
-          [action.spending.id]: action.spending,
+        singleSpending: {
+          ...state.singleSpending,
+          categories: [...state.singleSpending.categories, action.category],
         },
       };
-    }
-    case UPDATE_SPENDING: {
+    case REMOVE_CATEGORY_FROM_SPENDING:
+      if (!state.singleSpending) return state;
       return {
         ...state,
-        allSpendings: {
-          ...state.allSpendings,
-          [action.spending.id]: action.spending,
+        singleSpending: {
+          ...state.singleSpending,
+          categories: state.singleSpending.categories.filter(
+            (category) => category.category_id !== action.categoryId
+          ),
         },
       };
-    }
-    case DELETE_SPENDING: {
-      const newState = { ...state };
-      delete newState.allSpendings[action.spendingId];
-      return newState;
-    }
     default:
       return state;
   }
 }
 
-export default spendingReducer
+export default spendingReducer;
