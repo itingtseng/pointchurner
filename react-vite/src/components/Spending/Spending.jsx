@@ -19,6 +19,7 @@ const Spending = () => {
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [categoryToRemove, setCategoryToRemove] = useState(null);
+  const [categoryError, setCategoryError] = useState(""); // Custom error state for dropdown
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,12 +38,19 @@ const Spending = () => {
     fetchData();
   }, [dispatch]);
 
+  const validateCategory = () => {
+    if (!newCategoryId) {
+      setCategoryError("Please select a category.");
+      return false;
+    }
+    setCategoryError("");
+    return true;
+  };
+
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!newCategoryId) {
-      alert("Please select a category.");
-      return;
-    }
+    if (!validateCategory()) return;
+
     try {
       await dispatch(
         thunkAddCategoryToSpending({ category_id: parseInt(newCategoryId) })
@@ -183,6 +191,7 @@ const Spending = () => {
               <select
                 value={newCategoryId}
                 onChange={(e) => setNewCategoryId(e.target.value)}
+                className={categoryError ? "error-input" : ""}
               >
                 <option value="">-- Select a category --</option>
                 {validCategories.map(([id, name]) => (
@@ -192,6 +201,9 @@ const Spending = () => {
                 ))}
               </select>
             </label>
+            {categoryError && (
+              <p className="error-message">{categoryError}</p>
+            )}
             <button type="submit">Submit</button>
           </form>
         )}
@@ -199,18 +211,20 @@ const Spending = () => {
         {/* Confirmation Modal */}
         {showModal && (
           <div className="confirmation-modal">
-          <div className="modal-content">
-            <p className="modal-title">Are you sure you want to remove this category?</p>
-            <div className="modal-buttons">
-              <button onClick={handleRemoveCategory} className="confirm">
-                Yes
-              </button>
-              <button onClick={() => setShowModal(false)} className="cancel">
-                No
-              </button>
+            <div className="modal-content">
+              <p className="modal-title">
+                Are you sure you want to remove this category?
+              </p>
+              <div className="modal-buttons">
+                <button onClick={handleRemoveCategory} className="confirm">
+                  Yes
+                </button>
+                <button onClick={() => setShowModal(false)} className="cancel">
+                  No
+                </button>
+              </div>
             </div>
           </div>
-        </div>        
         )}
       </div>
     </div>

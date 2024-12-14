@@ -1,0 +1,120 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .user-profile {
+    max-width: 600px;
+    margin: 2rem auto;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .user-profile h1 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+  
+  .user-profile p {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    color: #555;
+  }
+  
+  .user-profile button {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 0.5rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .user-profile button:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .user-profile .delete-btn {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+  
+  .user-profile .delete-btn:hover {
+    background-color: #c0392b;
+  }
+  
+  /* Form styles */
+  .edit-profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .edit-profile-form label {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .edit-profile-form input {
+    margin-top: 0.5rem;
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .edit-profile-form input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .edit-profile-form .error-message {
+    color: #e74c3c;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+  
+  .form-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .form-buttons button {
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .form-buttons button[type="submit"] {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .form-buttons button[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+  
+  .form-buttons button[type="button"] {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .form-buttons button[type="button"]:hover {
+    background-color: #e0e0e0;
+  }
+  

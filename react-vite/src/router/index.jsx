@@ -6,6 +6,7 @@ import HomePage from '../components/Home/homepage';
 import CardDetail from '../components/Card/CardDetail';
 import Wallet from '../components/Wallet/Wallet';
 import Spending from '../components/Spending/Spending'; 
+import UserProfile from '../components/User/User';
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
         path: "spendings/:spendingId",
         element: <Spending />,
       },
+      {
+        path: "/profile",
+        element: <UserProfile />,
+      },      
     ],
   },
 ]);

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FaUserCircle } from 'react-icons/fa';
 import { thunkLogout } from "../../redux/session";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function ProfileButton() {
   const dispatch = useDispatch();
@@ -48,8 +48,16 @@ function ProfileButton() {
           </button>
           {showMenu && (
             <ul className="profile-dropdown" ref={ulRef}>
-              <li>{user.username}</li>
-              <li>{user.email}</li>
+              <li>
+                <Link to="/profile" onClick={closeMenu}>
+                  {user.username}
+                </Link>
+              </li>
+              <li>
+                <Link to="/profile" onClick={closeMenu}>
+                  {user.email}
+                </Link>
+              </li>
               <li>
                 <button onClick={logout}>Log Out</button>
               </li>
