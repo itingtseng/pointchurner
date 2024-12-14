@@ -54,6 +54,12 @@ const CardDetail = () => {
             <strong>Category:</strong> {reward.category_name}
             <br />
             {reward.bonus_point} {reward.multiplier_type}
+            <br />
+            {reward.notes && (
+              <>
+                <strong>Notes:</strong> {reward.notes}
+              </>
+            )}
           </li>
         ))}
       </ul>

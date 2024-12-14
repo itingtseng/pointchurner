@@ -7,6 +7,7 @@
   align-items: center;
   padding: 0 1rem;
   background-color: #f8f9fa; /* Adjust background color as needed */
+  height: 60px; /* Set a consistent height for the navbar */
 }
 
 .nav-left {
@@ -29,15 +30,30 @@
   padding: 15px;
 }
 
-.navigation ul {
-  display: flex; /* Makes the list horizontal */
-  list-style-type: none; /* Ensures bullet points are removed */
-  padding: 0;
+.nav-right ul {
+  display: flex;
+  align-items: left; /* Ensures all list items are vertically centered */
+  list-style: none;
   margin: 0;
+  padding: 0;
 }
 
-.navigation ul li {
-  margin-right: 1rem; /* Adds space between items */
+.nav-right ul li {
+  margin: 0 1rem; /* Adjust spacing between list items */
+  display: flex;
+  align-items: center; /* Ensures content inside each list item is centered */
+}
+
+.nav-right ul li ul li {
+  margin: 0; /* Adjust spacing between list items */
+  display: flex;
+  align-items: center; /* Ensures content inside each list item is centered */
+}
+
+.nav-right ul li a {
+  text-decoration: none;
+  font-size: 1rem;
+  color: #000;
 }
 
 .navigation ul li:hover{
@@ -54,10 +70,27 @@
   cursor: pointer;;
 }
 
+.profile-icon {
+  color: #333; /* Set a darker color, e.g., dark gray */
+  font-size: 2rem; /* Adjust the size of the icon */
+  transition: color 0.3s ease; /* Add a smooth transition for hover effect */
+}
+
+.profile-icon:hover {
+  color: #007bff; /* Change to a blue color on hover */
+}
+
+.profile-icon-button {
+  background: none; /* Remove button background */
+  border: none; /* Remove button border */
+  cursor: pointer; /* Change cursor to pointer */
+  padding: 0;
+}
+
 .profile-dropdown {
   position: absolute;
-  top: 50px; /* Position below the profile button */
-  right: 0; /* Align to the right edge */
+  top: 50px; /* Position the dropdown below the profile button */
+  right: 0; /* Align the dropdown to the left */
   background-color: #fff; /* White background */
   border: 1px solid #ddd; /* Light gray border */
   border-radius: 5px; /* Rounded corners */
@@ -73,7 +106,6 @@
 .profile-dropdown li {
   padding: 0.5rem 1rem; /* Add padding for spacing */
   cursor: pointer; /* Pointer cursor on hover */
-  text-align: left; /* Align text to the left */
 }
 
 .profile-dropdown li:not(:last-child) {
@@ -99,3 +131,5 @@
 .profile-dropdown button:hover {
   background-color: #cc0000; /* Darker red on hover */
 }
+
+
