@@ -13,6 +13,7 @@ class RewardPoint(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('categories.id')), nullable=False)
     bonus_point = db.Column(db.Numeric(10, 2), nullable=False)  # Use Decimal for precise numeric handling
     multiplier_type = db.Column(db.String(10), nullable=False)  # Examples: '%', 'x'
+    notes = db.Column(db.String(255), nullable=True)  # New notes column with a max length of 255 characters
 
     # Relationships
     card = db.relationship(
@@ -39,6 +40,7 @@ class RewardPoint(db.Model):
             'category_id': self.category_id,
             'bonus_point': float(self.bonus_point),  # Ensure JSON serialization compatibility
             'multiplier_type': self.multiplier_type,
+            'notes': self.notes,  # Include the notes field in the dictionary
         }
 
         if include_card and self.card:
@@ -64,7 +66,7 @@ class RewardPoint(db.Model):
         return RewardPoint.query.filter_by(category_id=category_id).all()
 
     @staticmethod
-    def create_reward_point(card_id, category_id, bonus_point, multiplier_type):
+    def create_reward_point(card_id, category_id, bonus_point, multiplier_type, notes=None):
         """
         Create a new RewardPoint instance.
 
@@ -72,12 +74,14 @@ class RewardPoint(db.Model):
         :param category_id: ID of the associated category.
         :param bonus_point: Bonus points for the reward.
         :param multiplier_type: Multiplier type (e.g., '%', 'x').
+        :param notes: Optional notes for the reward point.
         """
         reward_point = RewardPoint(
             card_id=card_id,
             category_id=category_id,
             bonus_point=bonus_point,
-            multiplier_type=multiplier_type
+            multiplier_type=multiplier_type,
+            notes=notes  # Set the notes field
         )
         db.session.add(reward_point)
         db.session.commit()

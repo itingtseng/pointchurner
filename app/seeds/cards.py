@@ -49,6 +49,7 @@ def seed_cards():
                 category_id=category.id,
                 bonus_point=float(reward_data.get("points", 0.0)),  # Ensure numeric type
                 multiplier_type=reward_data.get("type", "").strip(),
+                notes=reward_data.get("notes", "").strip()  # Include notes
             )
             db.session.add(reward_point)
 

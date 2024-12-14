@@ -36,7 +36,7 @@ def get_card(cardId):
     if not card:
         return {"message": "Card not found!"}, 404
 
-    # Build the card details including category names
+    # Build the card details including category names and notes
     card_details = {
         "id": card.id,
         "name": card.name,
@@ -47,7 +47,8 @@ def get_card(cardId):
             {
                 "category_name": reward.category.name,  # Get category name
                 "bonus_point": reward.bonus_point,
-                "multiplier_type": reward.multiplier_type
+                "multiplier_type": reward.multiplier_type,
+                "notes": reward.notes  # Include the notes column
             }
             for reward in card.reward_points
         ]
