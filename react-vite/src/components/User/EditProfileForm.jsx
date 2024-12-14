@@ -8,6 +8,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
     lastname: user?.lastname || "",
     email: user?.email || "",
     password: "",
+    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({}); // State to track errors
@@ -31,6 +32,9 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
       newErrors.email = "Email is required.";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Invalid email format.";
+    }
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match.";
     }
 
     setErrors(newErrors);
@@ -88,13 +92,23 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
         {errors.email && <p className="error-message">{errors.email}</p>}
       </label>
       <label>
-        Password (Optional):
+        Password:
         <input
           type="password"
           name="password"
           value={formData.password}
           onChange={handleChange}
         />
+      </label>
+      <label>
+        Confirm Password:
+        <input
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+        />
+        {errors.confirmPassword && <p className="error-message">{errors.confirmPassword}</p>}
       </label>
       <div className="form-buttons">
         <button type="submit">Save</button>

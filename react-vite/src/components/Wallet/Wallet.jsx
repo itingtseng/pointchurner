@@ -15,6 +15,7 @@ const Wallet = () => {
 
   const wallet = useSelector((state) => state.wallet.singleWallet);
   const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState("add");
   const [formCardId, setFormCardId] = useState(null);
@@ -23,6 +24,8 @@ const Wallet = () => {
     network: "",
     nickname: "",
   });
+  const [cardIdError, setCardIdError] = useState("");
+  const [networkError, setNetworkError] = useState("");
   const [nicknameError, setNicknameError] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [cardToRemove, setCardToRemove] = useState(null);
@@ -40,23 +43,47 @@ const Wallet = () => {
     fetchWallet();
   }, [dispatch]);
 
-  const validateNickname = () => {
-    if (!formData.nickname.trim()) {
-      setNicknameError("Nickname cannot be empty");
-      return false;
+  const validateField = (name, value) => {
+    if (name === "card_id" && formMode === "add") {
+      if (!value.trim()) return "Card ID cannot be empty";
     }
-    if (formData.nickname.length > 50) {
-      setNicknameError("Nickname must be less than 50 characters");
-      return false;
+    if (name === "nickname") {
+      if (!value.trim()) return "Nickname cannot be empty";
+      if (value.length > 50) return "Nickname must be less than 50 characters";
     }
-    setNicknameError("");
-    return true;
+    if (name === "network") {
+      if (!value) return "Please select a network";
+    }
+    return "";
+  };
+
+  const validateForm = () => {
+    const errors = {
+      card_id: validateField("card_id", formData.card_id),
+      nickname: validateField("nickname", formData.nickname),
+      network: validateField("network", formData.network),
+    };
+    setCardIdError(errors.card_id);
+    setNicknameError(errors.nickname);
+    setNetworkError(errors.network);
+    return !errors.card_id && !errors.nickname && !errors.network;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+
+    const error = validateField(name, value);
+    if (name === "card_id") setCardIdError(error);
+    if (name === "nickname") setNicknameError(error);
+    if (name === "network") setNetworkError(error);
   };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (!validateNickname()) return;
+    if (!validateForm()) return;
 
+    setIsSubmitting(true);
     try {
       if (formMode === "add") {
         await dispatch(thunkAddCardToWallet(formData));
@@ -69,19 +96,22 @@ const Wallet = () => {
         );
       }
       setFormData({ card_id: "", network: "", nickname: "" });
+      setCardIdError("");
+      setNicknameError("");
+      setNetworkError("");
       setShowForm(false);
       setFormCardId(null);
       await dispatch(thunkGetUserWallet());
     } catch (err) {
-      console.error("Error handling form submission:", err);
-      setError("An error occurred while processing the form.");
+      if (err.message === "Card already exists in wallet") {
+        setCardIdError("This card ID is already in your wallet.");
+      } else {
+        console.error("Error handling form submission:", err);
+        setError("An error occurred while processing the form.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-    if (name === "nickname") validateNickname();
   };
 
   const handleAddClick = () => {
@@ -138,15 +168,19 @@ const Wallet = () => {
       {showForm && (
         <form className="add-card-form" onSubmit={handleFormSubmit} noValidate>
           {formMode === "add" && (
-            <label>
-              Card ID:
-              <input
-                type="text"
-                name="card_id"
-                value={formData.card_id}
-                onChange={handleInputChange}
-              />
-            </label>
+            <>
+              <label>
+                Card ID:
+                <input
+                  type="text"
+                  name="card_id"
+                  value={formData.card_id}
+                  onChange={handleInputChange}
+                  className={cardIdError ? "error-input" : ""}
+                />
+              </label>
+              {cardIdError && <p className="error-message">{cardIdError}</p>}
+            </>
           )}
           <label>
             Network:
@@ -154,6 +188,7 @@ const Wallet = () => {
               name="network"
               value={formData.network}
               onChange={handleInputChange}
+              className={networkError ? "error-input" : ""}
             >
               <option value="">Select a network</option>
               <option value="VISA">Visa</option>
@@ -163,6 +198,7 @@ const Wallet = () => {
               <option value="OTHER">Other</option>
             </select>
           </label>
+          {networkError && <p className="error-message">{networkError}</p>}
           <label>
             Nickname:
             <input
@@ -174,8 +210,12 @@ const Wallet = () => {
             />
           </label>
           {nicknameError && <p className="error-message">{nicknameError}</p>}
-          <button type="submit">
-            {formMode === "add" ? "Add Card" : "Save Changes"}
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting
+              ? "Submitting..."
+              : formMode === "add"
+              ? "Add Card"
+              : "Save Changes"}
           </button>
           <button
             type="button"

@@ -18,12 +18,14 @@
   .card-image {
     display: block;
     width: 100%;
-    max-width: 300px;
-    height: auto;
+    max-width: 200px; /* Adjusted size */
+    max-height: 300px; /* Optional height constraint */
+    height: auto; /* Maintain aspect ratio */
     margin: 20px auto;
     border-radius: 8px;
     border: 1px solid #ccc;
-  }
+    object-fit: contain; /* Ensures the image fits within the box */
+}
   
   .card-detail p {
     font-size: 1rem;

@@ -40,7 +40,7 @@ def get_card(cardId):
     card_details = {
         "id": card.id,
         "name": card.name,
-        "issuer": card.issuer,
+        "issuer": card.issuer.replace("_", " "),  # Remove underscores from issuer
         "image_url": card.image_url,
         "url": card.url,
         "reward_points": [

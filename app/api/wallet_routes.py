@@ -15,21 +15,21 @@ def get_current_user_wallet():
         return {"message": "Wallet not found!"}, 404
 
     wallet_details = {
-        "id": wallet.id,
-        "cards": [
-            {
-                "id": card.id,
-                "name": card.name,
-                "nickname": wallet_card.nickname,
-                "network": wallet_card.network,
-                "issuer": card.issuer,
-                "image_url": card.image_url,
-                "url": card.url,
-            }
-            for wallet_card in wallet.wallet_cards
-            for card in [wallet_card.card]
-        ],
-    }
+    "id": wallet.id,
+    "cards": [
+        {
+            "id": card.id,
+            "name": card.name,
+            "nickname": wallet_card.nickname,
+            "network": wallet_card.network.replace("_", " "),
+            "issuer": card.issuer.replace("_", " "),  # Remove underscores
+            "image_url": card.image_url,
+            "url": card.url,
+        }
+        for wallet_card in wallet.wallet_cards
+        for card in [wallet_card.card]
+    ],
+}
     print(f"Wallet details: {wallet_details}")  # Debugging log
     return jsonify(wallet_details), 200
 

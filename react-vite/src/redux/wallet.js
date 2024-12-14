@@ -46,8 +46,6 @@ export const thunkGetUserWallet = () => async (dispatch) => {
 };
 
 
-
-
 export const thunkAddCardToWallet = (cardData) => async (dispatch) => {
   try {
     const res = await fetch('/api/wallets/cards', {
@@ -55,16 +53,22 @@ export const thunkAddCardToWallet = (cardData) => async (dispatch) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cardData),
     });
+
     if (res.ok) {
       const data = await res.json();
       dispatch(addCardToWallet(data));
+    } else if (res.status === 409) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || "Card already exists in wallet");
     } else {
       throw new Error('Failed to add card to wallet');
     }
   } catch (error) {
-    console.error('Error adding card to wallet:', error);
+    console.error('Error adding card to wallet:', error.message);
+    throw error;
   }
 };
+
 
 export const thunkRemoveCardFromWallet = (cardId) => async (dispatch) => {
   try {
