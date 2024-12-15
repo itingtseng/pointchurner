@@ -86,11 +86,12 @@ export const thunkSignup = (user) => async (dispatch) => {
 };
 
 // Thunk for logging out the user
-export const thunkLogout = () => async (dispatch) => {
+export const thunkLogout = (navigate) => async (dispatch) => {
   try {
     const response = await fetch("/api/auth/logout", { method: "POST" });
     if (response.ok) {
       dispatch(removeUser());
+      navigate("/"); // Redirect to the homepage
     } else {
       console.error("Failed to log out user:", await response.text());
     }
@@ -105,8 +106,11 @@ export const fetchSessionUser = () => async (dispatch) => {
     const response = await fetch("/api/users/session");
     if (response.ok) {
       const data = await response.json();
-      console.log("Session user data:", data); // Debug API response
       dispatch(setUser(data));
+    } else if (response.status === 401) {
+      // Clear session and redirect
+      dispatch(removeUser());
+      window.location.href = "/login"; // Redirect to login
     } else {
       console.error("Failed to fetch session user:", await response.text());
     }
@@ -114,6 +118,7 @@ export const fetchSessionUser = () => async (dispatch) => {
     console.error("Error fetching session user:", error);
   }
 };
+
 
 // Initial state
 const initialState = { user: null };
