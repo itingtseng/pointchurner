@@ -33,6 +33,10 @@ export const router = createBrowserRouter([
         element: <Wallet />,
       },
       {
+        path: "/wallet/edit/:cardId",
+        element: <Wallet />,
+      },
+      {
         path: "spendings/:spendingId",
         element: <Spending />,
       },

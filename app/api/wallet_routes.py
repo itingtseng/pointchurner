@@ -102,6 +102,9 @@ def add_card():
 @wallet_routes.route('/cards/<int:card_id>', methods=["PUT"])
 @login_required
 def update_card(card_id):
+    """
+    Update the nickname or network of a card in the user's wallet.
+    """
     wallet = Wallet.query.filter_by(user_id=current_user.id).first()
     if not wallet:
         return {"message": "Wallet not found!"}, 404
@@ -114,11 +117,22 @@ def update_card(card_id):
     if not data:
         return {"message": "No data provided for update"}, 400
 
-    wallet_card.nickname = data.get("nickname", wallet_card.nickname)
-    wallet_card.network = data.get("network", wallet_card.network)
+    # Update only the nickname field
+    if "nickname" in data:
+        wallet_card.nickname = data["nickname"]
+
     db.session.commit()
 
-    return jsonify(wallet_card.to_dict()), 200
+    return jsonify({
+        "id": wallet_card.card.id,
+        "name": wallet_card.card.name,
+        "nickname": wallet_card.nickname,
+        "network": wallet_card.network,
+        "issuer": wallet_card.card.issuer,
+        "image_url": wallet_card.card.image_url,
+        "url": wallet_card.card.url,
+    }), 200
+
 
 
 # Remove a card from the wallet

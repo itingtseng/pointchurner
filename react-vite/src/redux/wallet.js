@@ -85,23 +85,26 @@ export const thunkRemoveCardFromWallet = (cardId) => async (dispatch) => {
   }
 };
 
-export const thunkUpdateWallet = (walletId, walletData) => async (dispatch) => {
+export const thunkUpdateWallet = (cardId, walletData) => async (dispatch) => {
   try {
-    const res = await fetch(`/api/wallets/${walletId}`, {
+    const res = await fetch(`/api/wallets/cards/${cardId}`, { // Correct endpoint
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(walletData),
     });
+
     if (res.ok) {
       const data = await res.json();
-      dispatch(updateWallet(data));
+      dispatch(updateWallet(data)); // Update state with returned data
     } else {
-      throw new Error(`Failed to update wallet with ID: ${walletId}`);
+      throw new Error(`Failed to update card with ID: ${cardId}`);
     }
   } catch (error) {
-    console.error(`Error updating wallet with ID ${walletId}:`, error);
+    console.error(`Error updating card with ID ${cardId}:`, error);
   }
 };
+
+
 
 // Selectors
 export const selectWallet = (state) => state.wallet.singleWallet;

@@ -96,37 +96,4 @@ def add_card_to_wallet():
     return {"message": "Card successfully added to the wallet."}, 201
 
 
-# Edit card details in the wallet
-@card_routes.route('/wallet/cards/<int:cardId>/edit', methods=['PUT'])
-@login_required
-def edit_card_in_wallet(cardId):
-    """
-    Edit a card's details in the user's wallet.
-    """
-    wallet_card = Wallet.query.join(Card).filter(Card.id == cardId, Wallet.user_id == current_user.id).first()
-    if not wallet_card:
-        return {"message": "Card not found in your wallet!"}, 404
-
-    data = request.json
-    wallet_card.nickname = data.get("nickname", wallet_card.nickname)
-    wallet_card.network = data.get("network", wallet_card.network)
-
-    db.session.commit()
-    return {"message": "Card successfully updated in the wallet."}, 200
-
-
-# Remove card from wallet
-@card_routes.route('/wallet/cards/<int:cardId>', methods=['DELETE'])
-@login_required
-def remove_card_from_wallet(cardId):
-    """
-    Remove a card from the user's wallet.
-    """
-    wallet_card = Wallet.query.join(Card).filter(Card.id == cardId, Wallet.user_id == current_user.id).first()
-    if not wallet_card:
-        return {"message": "Card not found in your wallet!"}, 404
-
-    db.session.delete(wallet_card)
-    db.session.commit()
-    return {"message": "Card successfully removed from the wallet."}, 200
     

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   thunkGetUserWallet,
@@ -65,6 +65,7 @@ const issuerNetworkMap = {
 const Wallet = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { cardId } = useParams();
 
   const wallet = useSelector((state) => state.wallet.singleWallet);
   const [error, setError] = useState(null);
@@ -84,6 +85,8 @@ const Wallet = () => {
   const [loadingCards, setLoadingCards] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [showCardImages, setShowCardImages] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [cardToRemove, setCardToRemove] = useState(null);
 
   useEffect(() => {
     const fetchWallet = async () => {
@@ -188,43 +191,29 @@ const Wallet = () => {
     setShowCardImages(false); // Hide card images when a card is selected
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsSubmitting(true);
-    try {
-      if (formMode === "add") {
-        const payload = {
-          card_id: formData.selectedCard.id,
-          network: formData.network,
-          nickname: formData.nickname || null,
-        };
-        await dispatch(thunkAddCardToWallet(payload));
-      } else if (formMode === "edit") {
-        const payload = {
-          nickname: formData.nickname || null,
-          network: formData.network,
-        };
-        await dispatch(thunkUpdateWallet(formCardId, payload));
-      }
-      setShowForm(false);
+  // Remove this useEffect if we're populating the form directly
+useEffect(() => {
+  if (cardId && wallet?.cards) {
+    const cardToEdit = wallet.cards.find((card) => card.id === parseInt(cardId));
+    if (cardToEdit) {
+      setFormMode("edit");
+      setFormCardId(cardToEdit.id);
       setFormData({
-        issuer: "",
+        issuer: cardToEdit.issuer || "",
         cardType: "",
-        selectedCard: null,
-        network: "",
-        nickname: "",
+        selectedCard: cardToEdit,
+        network: cardToEdit.network || "",
+        nickname: cardToEdit.nickname || "",
       });
-      setCards([]);
-      await dispatch(thunkGetUserWallet());
-    } catch (err) {
-      console.error("Error handling form submission:", err);
-      setError("An error occurred while processing the form.");
-    } finally {
-      setIsSubmitting(false);
+
+      const newNetworks = issuerNetworkMap[cardToEdit.issuer] || [];
+      setNetworks(newNetworks);
+      setShowForm(true);
     }
-  };
+  }
+}, [cardId, wallet]);
+
+  
 
   const handleAddClick = () => {
     setFormMode("add");
@@ -242,21 +231,83 @@ const Wallet = () => {
     setFormMode("edit");
     setFormCardId(card.id);
     setFormData({
+      issuer: card.issuer || "",
+      cardType: "",
       selectedCard: card,
-      network: card.network,
-      nickname: card.nickname,
+      network: card.network || "",
+      nickname: card.nickname || "",
     });
+  
+    const newNetworks = issuerNetworkMap[card.issuer] || [];
+    setNetworks(newNetworks);
     setShowForm(true);
   };
+    
+  
 
-  const handleRemoveClick = (cardId) => {
-    dispatch(thunkRemoveCardFromWallet(cardId))
-      .then(() => dispatch(thunkGetUserWallet()))
-      .catch((err) => {
-        console.error("Error removing card:", err);
-        setError("An error occurred while removing the card.");
-      });
+    const handleRemoveClick = (cardId) => {
+    setCardToRemove(cardId);
+    setShowConfirmModal(true);
   };
+
+  const confirmRemoveCard = async () => {
+    try {
+      await dispatch(thunkRemoveCardFromWallet(cardToRemove));
+      setCardToRemove(null);
+      setShowConfirmModal(false);
+      await dispatch(thunkGetUserWallet());
+    } catch (err) {
+      console.error("Error removing card:", err);
+      setError("An error occurred while removing the card.");
+    }
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    if (formMode === "edit" && !formData.nickname.trim()) {
+      setFormErrors({ nickname: "Nickname cannot be empty." });
+      return;
+    }
+  
+    setIsSubmitting(true);
+    try {
+      if (formMode === "add") {
+        const payload = {
+          card_id: formData.selectedCard.id,
+          network: formData.network,
+          nickname: formData.nickname || null,
+        };
+        await dispatch(thunkAddCardToWallet(payload));
+      } else if (formMode === "edit") {
+        const payload = { nickname: formData.nickname.trim() }; // Only update nickname
+        console.log("Updating Card ID:", formCardId, "with Payload:", payload);
+        await dispatch(thunkUpdateWallet(formCardId, payload));
+      }
+  
+      // Reset form state and refetch wallet
+      resetFormState();
+      await dispatch(thunkGetUserWallet());
+    } catch (err) {
+      console.error("Error handling form submission:", err);
+      setError("An error occurred while processing the form.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const resetFormState = () => {
+    setShowForm(false);
+    setFormData({
+      issuer: "",
+      cardType: "",
+      selectedCard: null,
+      network: "",
+      nickname: "",
+    });
+    setNetworks([]);
+    setCards([]);
+  };
+  
 
   if (error) {
     return (
@@ -340,29 +391,6 @@ const Wallet = () => {
               ) : (
                 cards.length > 0 && (
                   <>
-                    {/* Dropdown for card selection */}
-                    <label>
-                      Select Card:
-                      <select
-                        name="selectedCard"
-                        value={formData.selectedCard?.id || ""}
-                        onChange={(e) => {
-                          const selectedCard = cards.find(
-                            (card) => card.id === parseInt(e.target.value)
-                          );
-                          handleCardSelection(selectedCard);
-                        }}
-                        onClick={() => handleDropdownClick()} // Reset selected card on dropdown click
-                      >
-                        <option value="">--Select a Card--</option>
-                        {cards.map((card) => (
-                          <option key={card.id} value={card.id}>
-                            {card.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
                     {/* Show selected card or all cards if none is selected */}
                     <div className="card-list">
                       {formData.selectedCard ? (
@@ -410,7 +438,9 @@ const Wallet = () => {
               type="text"
               name="nickname"
               value={formData.nickname}
-              onChange={handleInputChange}
+              onChange={(e) =>
+                setFormData({ ...formData, nickname: e.target.value })
+              }
             />
             {formErrors.nickname && (
               <p className="error-message">{formErrors.nickname}</p>
@@ -480,6 +510,26 @@ const Wallet = () => {
           <p>Your wallet is empty. Start adding cards!</p>
         )}
       </div>
+      {showConfirmModal && (
+        <div className="confirmation-modal">
+          <div className="modal-content">
+            <p className="modal-title">
+              Are you sure you want to remove this card?
+            </p>
+            <div className="modal-buttons">
+              <button className="confirm" onClick={confirmRemoveCard}>
+                Yes
+              </button>
+              <button
+                className="cancel"
+                onClick={() => setShowConfirmModal(false)}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
