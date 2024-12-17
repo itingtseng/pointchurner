@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, flash, redirect, url_for
 from flask_login import login_required, current_user
 from app.models import Card, Wallet, RewardPoint, Category, db
 from app.forms import AddCardToWalletForm, EditCardForm
@@ -9,22 +9,33 @@ card_routes = Blueprint('cards', __name__)
 @card_routes.route('/')
 def all_cards():
     """
-    Retrieve all cards.
+    Retrieve all cards, optionally filtered by issuer and card type.
     """
-    cards = Card.query.all()
-    all_cards = {
+    issuer = request.args.get('issuer')
+    card_type = request.args.get('card_type')  # "business" or "personal"
+
+    query = Card.query
+    if issuer:
+        query = query.filter(Card.issuer == issuer)
+    if card_type:
+        is_business = card_type == "business"
+        query = query.filter(Card.is_business == is_business)
+
+    cards = query.all()
+    return jsonify({
         "cards": [
             {
                 "id": card.id,
                 "name": card.name,
                 "issuer": card.issuer,
                 "image_url": card.image_url,
-                "url": card.url
+                "url": card.url,
+                "is_business": card.is_business
             }
             for card in cards
         ]
-    }
-    return jsonify(all_cards)
+    })
+
 
 # Get card details by ID
 @card_routes.route('/<int:cardId>')
@@ -36,78 +47,86 @@ def get_card(cardId):
     if not card:
         return {"message": "Card not found!"}, 404
 
-    # Build the card details including category names and notes
     card_details = {
         "id": card.id,
         "name": card.name,
         "issuer": card.issuer.replace("_", " "),  # Remove underscores from issuer
         "image_url": card.image_url,
         "url": card.url,
+        "is_business": card.is_business,
         "reward_points": [
             {
-                "category_name": reward.category.name,  # Get category name
+                "category_name": reward.category.name,
                 "bonus_point": reward.bonus_point,
                 "multiplier_type": reward.multiplier_type,
-                "notes": reward.notes  # Include the notes column
+                "notes": reward.notes
             }
             for reward in card.reward_points
         ]
     }
     return jsonify(card_details)
 
-# Add card to wallet via form
-@card_routes.route('/wallet/cards/new', methods=['GET', 'POST'])
+
+# Add card to wallet via API
+@card_routes.route('/wallet/cards', methods=['POST'])
 @login_required
-def add_card_to_wallet_form():
+def add_card_to_wallet():
     """
-    Render a form for adding a card to the wallet and handle submission.
+    Add a card to the user's wallet.
     """
-    form = AddCardToWalletForm()
-    form.card_id.choices = [(card.id, card.name) for card in Card.query.all()]
-    form.wallet_id.choices = [(wallet.id, wallet.name) for wallet in Wallet.query.filter_by(user_id=current_user.id).all()]
+    data = request.json
+    wallet_id = data.get("wallet_id")
+    card_id = data.get("card_id")
+    nickname = data.get("nickname")
+    network = data.get("network")
 
-    if form.validate_on_submit():
-        wallet_id = form.wallet_id.data
-        card_id = form.card_id.data
-        nickname = form.nickname.data
-        network = form.network.data
+    if not wallet_id or not card_id or not nickname or not network:
+        return {"message": "All fields are required."}, 400
 
-        # Check if card already exists in the wallet
-        existing_card = Wallet.query.filter_by(id=wallet_id).join(Card).filter(Card.id == card_id).first()
-        if existing_card:
-            flash("Card already exists in the selected wallet!", "error")
-            return redirect(url_for("card_routes.add_card_to_wallet_form"))
+    # Check if card already exists in the wallet
+    existing_card = Wallet.query.filter_by(wallet_id=wallet_id).join(Card).filter(Card.id == card_id).first()
+    if existing_card:
+        return {"message": "Card already exists in the wallet."}, 409
 
-        # Add the card to the wallet
-        new_wallet_card = Wallet(card_id=card_id, wallet_id=wallet_id, nickname=nickname, network=network)
-        db.session.add(new_wallet_card)
-        db.session.commit()
+    # Add the card to the wallet
+    new_wallet_card = Wallet(card_id=card_id, wallet_id=wallet_id, nickname=nickname, network=network)
+    db.session.add(new_wallet_card)
+    db.session.commit()
 
-        flash("Card successfully added to wallet!", "success")
-        return redirect(url_for("card_routes.all_cards"))
+    return {"message": "Card successfully added to the wallet."}, 201
 
-    return render_template("add_card_form.html", form=form)
 
-# Edit card details in the wallet via form
-@card_routes.route('/wallet/cards/<int:cardId>/edit', methods=['GET', 'POST'])
+# Edit card details in the wallet
+@card_routes.route('/wallet/cards/<int:cardId>/edit', methods=['PUT'])
 @login_required
-def edit_card_form(cardId):
+def edit_card_in_wallet(cardId):
     """
-    Render a form to edit card details in the wallet and handle submission.
+    Edit a card's details in the user's wallet.
     """
     wallet_card = Wallet.query.join(Card).filter(Card.id == cardId, Wallet.user_id == current_user.id).first()
     if not wallet_card:
-        flash("Card not found in your wallet!", "error")
-        return redirect(url_for("card_routes.all_cards"))
+        return {"message": "Card not found in your wallet!"}, 404
 
-    form = EditCardForm(obj=wallet_card)
+    data = request.json
+    wallet_card.nickname = data.get("nickname", wallet_card.nickname)
+    wallet_card.network = data.get("network", wallet_card.network)
 
-    if form.validate_on_submit():
-        wallet_card.nickname = form.nickname.data
-        wallet_card.network = form.network.data
-        db.session.commit()
+    db.session.commit()
+    return {"message": "Card successfully updated in the wallet."}, 200
 
-        flash("Card successfully updated!", "success")
-        return redirect(url_for("card_routes.all_cards"))
 
-    return render_template("edit_card_form.html", form=form)
+# Remove card from wallet
+@card_routes.route('/wallet/cards/<int:cardId>', methods=['DELETE'])
+@login_required
+def remove_card_from_wallet(cardId):
+    """
+    Remove a card from the user's wallet.
+    """
+    wallet_card = Wallet.query.join(Card).filter(Card.id == cardId, Wallet.user_id == current_user.id).first()
+    if not wallet_card:
+        return {"message": "Card not found in your wallet!"}, 404
+
+    db.session.delete(wallet_card)
+    db.session.commit()
+    return {"message": "Card successfully removed from the wallet."}, 200
+    

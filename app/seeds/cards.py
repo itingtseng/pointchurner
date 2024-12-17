@@ -25,12 +25,16 @@ def seed_cards():
         # Use local images based on the card ID
         image_url = f"/seed-images/{idx}.png"
 
+        # Determine if the card is a business card (based on the data or default to False)
+        is_business = card_data.get("isBusiness", False)
+
         # Create Card
         card = Card(
             name=name,
             issuer=issuer,
             url=card_url,
-            image_url=image_url
+            image_url=image_url,
+            is_business=is_business  # Populate is_business
         )
         db.session.add(card)
         db.session.commit()

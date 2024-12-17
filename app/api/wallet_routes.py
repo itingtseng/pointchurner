@@ -71,8 +71,8 @@ def add_card():
     """
     data = request.json
 
-    # Validate input data
-    if not data or not all(key in data for key in ["card_id", "nickname", "network"]):
+    # Validate input data (remove 'nickname' from required fields)
+    if not data or not all(key in data for key in ["card_id", "network"]):
         return {"message": "Invalid input data"}, 400
 
     wallet = Wallet.query.filter_by(user_id=current_user.id).first()
@@ -89,10 +89,14 @@ def add_card():
     if not card:
         return {"message": "Card not found!"}, 404
 
+    # Use the provided nickname or default to None
+    nickname = data.get("nickname")
+
     # Add the card to the wallet
-    WalletCard.create_wallet_card(wallet.id, data["card_id"], data["nickname"], data["network"])
+    WalletCard.create_wallet_card(wallet.id, data["card_id"], nickname, data["network"])
 
     return jsonify({"message": "Card added to wallet successfully!"}), 201
+
 
 # Update card details in the wallet
 @wallet_routes.route('/cards/<int:card_id>', methods=["PUT"])

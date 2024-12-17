@@ -8,6 +8,10 @@ import {
 } from "../../redux/spending";
 import "./Spending.css";
 
+const capitalizeFirstLetter = (string) => {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
 const Spending = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -28,7 +32,10 @@ const Spending = () => {
         const res = await fetch("/api/spendings/categories/form");
         if (!res.ok) throw new Error("Failed to fetch categories.");
         const data = await res.json();
-        setCategories(data.choices || []);
+        const sortedCategories = (data.choices || []).sort((a, b) =>
+          a[1].localeCompare(b[1])
+        );
+        setCategories(sortedCategories);
       } catch (err) {
         console.error("Error initializing spending page:", err);
         setError("An error occurred while fetching data.");
@@ -146,7 +153,7 @@ const Spending = () => {
               <li key={index}>
                 {group.name && (
                   <div>
-                    <strong>{group.name}:</strong>
+                    <strong>{capitalizeFirstLetter(group.name)}:</strong>
                     <button
                       onClick={() => confirmRemoveCategory(group.id)}
                       className="remove-button"
@@ -159,7 +166,7 @@ const Spending = () => {
                   <ul>
                     {group.children.map((child, idx) => (
                       <li key={idx}>
-                        {child.name}
+                        {capitalizeFirstLetter(child.name)}
                         <button
                           onClick={() => confirmRemoveCategory(child.id)}
                           className="remove-button"
@@ -196,14 +203,12 @@ const Spending = () => {
                 <option value="">-- Select a category --</option>
                 {validCategories.map(([id, name]) => (
                   <option key={id} value={id}>
-                    {name}
+                    {capitalizeFirstLetter(name)}
                   </option>
                 ))}
               </select>
             </label>
-            {categoryError && (
-              <p className="error-message">{categoryError}</p>
-            )}
+            {categoryError && <p className="error-message">{categoryError}</p>}
             <button type="submit">Submit</button>
           </form>
         )}

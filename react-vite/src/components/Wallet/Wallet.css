@@ -2,7 +2,6 @@
     padding: 20px;
     max-width: 1000px;
     margin: 0 auto;
-    font-family: Arial, sans-serif;
   }
   
   .wallet-container h1 {
@@ -76,7 +75,6 @@
   border: 1px solid #ddd; /* Light gray border */
   border-radius: 8px;
   width: 100%;
-  max-width: 400px; /* Limit form width */
   margin-bottom: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
@@ -110,17 +108,6 @@
 
 .add-card-form button:hover {
   background-color: #218838; /* Darker green on hover */
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .add-card-form {
-    width: 90%; /* Adjust form width for smaller screens */
-  }
-
-  .add-card-button {
-    width: 100%; /* Make button span full width on smaller screens */
-  }
 }
 
 /* Edit Card Form */
@@ -320,7 +307,6 @@ button.cancel-button {
   color: white;
   border: none;
   padding: 8px 12px;
-  margin: 5px;
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.3s ease;
@@ -342,3 +328,44 @@ button.cancel-button:hover {
 }
 
 
+.card-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns */
+  gap: 15px; /* Space between cards */
+  margin-top: 20px;
+}
+
+.card-item {
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.card-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  border-color: #007bff;
+}
+
+.card-item.selected {
+  border: 2px solid #007bff;
+  background-color: #f0f8ff;
+}
+
+.card-item img {
+  max-width: 100%;
+  height: 150px; /* Uniform height for all images */
+  object-fit: contain; /* Ensure the image scales properly */
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.card-item p {
+  font-size: 0.9rem;
+  color: #333;
+  margin: 5px 0 0 0;
+}

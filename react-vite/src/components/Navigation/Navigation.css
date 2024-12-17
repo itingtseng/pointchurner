@@ -13,6 +13,8 @@
 .nav-left {
   display: flex;
   align-items: center;
+  height: auto;
+  z-index: 1;
 }
 
 .nav-right {
@@ -25,9 +27,10 @@
 }
 
 .navigation .logo {
-  height: 30px; /* Adjust logo size */
+  height: 32px;
+  width: auto;
   object-fit: contain;
-  padding: 15px;
+  padding: 0 16px 0 16px;
 }
 
 .nav-right ul {
@@ -54,6 +57,11 @@
   text-decoration: none;
   font-size: 1rem;
   color: #000;
+}
+
+.navigation ul li a:hover{
+  cursor: pointer;
+  color: #007bff;
 }
 
 .navigation ul li:hover{
@@ -85,6 +93,9 @@
   border: none; /* Remove button border */
   cursor: pointer; /* Change cursor to pointer */
   padding: 0;
+  display: flex;
+  align-items: center;
+  margin: 0;
 }
 
 .profile-dropdown {

@@ -47,6 +47,9 @@ const CardDetail = () => {
           {card.url}
         </a>
       </p>
+      <p>
+        <strong>Business Card:</strong> {card.is_business ? "Yes" : "No"}
+      </p>
       <h2>Reward Points</h2>
       <ul>
         {card.reward_points.map((reward, index) => (

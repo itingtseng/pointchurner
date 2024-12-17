@@ -12,6 +12,7 @@ class Card(db.Model):
     issuer = db.Column(db.String(255), nullable=False)
     image_url = db.Column(db.String(255), nullable=True)
     url = db.Column(db.String(255), nullable=True)
+    is_business = db.Column(db.Boolean, nullable=False, default=False)  # New column
 
     # Relationships
     reward_points = db.relationship(
@@ -34,6 +35,7 @@ class Card(db.Model):
             'issuer': self.issuer,
             'image_url': self.image_url,
             'url': self.url,
+            'is_business': self.is_business,  # Include the new column
             'reward_points': [reward_point.to_dict() for reward_point in self.reward_points]
         }
 
@@ -43,12 +45,13 @@ class Card(db.Model):
         return card_dict
 
     @staticmethod
-    def create_card(name, issuer, image_url=None, url=None):
+    def create_card(name, issuer, image_url=None, url=None, is_business=False):
         card = Card(
             name=name,
             issuer=issuer,
             image_url=image_url,
-            url=url
+            url=url,
+            is_business=is_business  # Accept new column value
         )
         db.session.add(card)
         db.session.commit()

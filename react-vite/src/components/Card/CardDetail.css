@@ -1,11 +1,7 @@
 .card-detail {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
   }
   
   .card-detail h1 {
@@ -23,7 +19,7 @@
     height: auto; /* Maintain aspect ratio */
     margin: 20px auto;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    /* border: 1px solid #ccc; */
     object-fit: contain; /* Ensures the image fits within the box */
 }
   

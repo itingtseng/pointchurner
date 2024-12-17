@@ -1,12 +1,13 @@
 .spending-container {
-    max-width: 800px;
-    margin: 0 auto;
     padding: 20px;
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .spending-container h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
   }
   
   .spending-details h3 {
@@ -24,6 +25,18 @@
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+  }
+
+  .spending-details li > div {
+    display: flex; /* Use flexbox for layout */
+    justify-content: space-between; /* Space between content and button */
+    align-items: center; /* Align items vertically */
+  }
+
+  .spending-details li ul li {
+    display: flex; /* Use flexbox for layout */
+    justify-content: space-between; /* Space between content and button */
+    align-items: center; /* Align items vertically */
   }
   
   .spending-error {
