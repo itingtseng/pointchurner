@@ -108,7 +108,7 @@ const HomePage = () => {
     return (
       <div className="container">
         <h1>Welcome!</h1>
-        <h2>Explore All Cards</h2>
+        <h2>Explore 154 Cards</h2>
         <div className="grid">
           {cards.length > 0 ? (
             cards.map((card) => (
@@ -127,7 +127,7 @@ const HomePage = () => {
           )}
         </div>
 
-        <h2>Categories</h2>
+        <h2>35 Categories</h2>
         <div className="categories">
           {categories.length > 0 ? (
             categories.map((category) => (

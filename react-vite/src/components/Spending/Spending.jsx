@@ -9,8 +9,10 @@ import {
 import "./Spending.css";
 
 const capitalizeFirstLetter = (string) => {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-};
+    if (!string) return ""; // Return an empty string if undefined or null
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+  
 
 const Spending = () => {
   const dispatch = useDispatch();
