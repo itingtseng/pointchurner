@@ -21,15 +21,19 @@ const HomePage = () => {
 
   useEffect(() => {
     if (user) {
-      // Fetch wallet and spending data for logged-in users
       dispatch(thunkGetUserWallet());
       dispatch(thunkGetUserSpending());
     } else {
-      // Fetch all cards and categories for non-logged-in users
       dispatch(thunkGetAllCards());
       dispatch(thunkGetAllCategories());
     }
   }, [dispatch, user]);
+  
+  useEffect(() => {
+    console.log("Spending Categories:", spending?.categories || []);
+    console.log("Wallet Cards:", wallet?.cards || []);
+  }, [spending, wallet]);
+  
 
   const capitalizeWords = (string) => {
     return string
@@ -42,6 +46,7 @@ const HomePage = () => {
   const processCategories = (categories) => {
     const leafCategories = new Set();
     categories.forEach((category) => {
+      console.log("Processing Category:", category);
       const isChild = categories.some(
         (parent) => parent.name === category.parent_name
       );
@@ -49,37 +54,56 @@ const HomePage = () => {
         leafCategories.add(capitalizeWords(category.name));
       }
     });
+    console.log("Leaf Categories:", Array.from(leafCategories));
     return Array.from(leafCategories);
   };
+  
 
   // Get the best card for a given spending category
   const getBestCardForCategory = (category) => {
     if (!wallet || !wallet.cards) return [];
 
+    console.log(`Processing category: ${category}`);
+    console.log("Wallet Cards:", wallet.cards);
+    wallet.cards.forEach((card) => {
+      console.log(`Card: ${card.name}`, card); // Log full card data
+    });
+    
+  
+    const normalizedCategory = category.toLowerCase().trim();
+  
     const relevantCards = wallet.cards.filter(
       (card) =>
         Array.isArray(card.reward_points) &&
-        card.reward_points.some((reward) => reward.category_name === category)
+        card.reward_points.some(
+          (reward) => reward.category_name.toLowerCase().trim() === normalizedCategory
+        )
     );
-
+  
     if (relevantCards.length > 0) {
       return [
         relevantCards.sort(
           (a, b) =>
             Math.max(
               ...b.reward_points
-                .filter((reward) => reward.category_name === category)
+                .filter(
+                  (reward) =>
+                    reward.category_name.toLowerCase().trim() === normalizedCategory
+                )
                 .map((reward) => reward.bonus_point)
             ) -
             Math.max(
               ...a.reward_points
-                .filter((reward) => reward.category_name === category)
+                .filter(
+                  (reward) =>
+                    reward.category_name.toLowerCase().trim() === normalizedCategory
+                )
                 .map((reward) => reward.bonus_point)
             )
         )[0],
       ];
     }
-
+  
     // If no match, return all cards with a default reward
     return wallet.cards.map((card) => ({
       ...card,
@@ -92,16 +116,18 @@ const HomePage = () => {
       ],
     }));
   };
-
-  // Generate bonus details for a given card and category
+  
   const getCardBonusDetails = (card, category) => {
+    const normalizedCategory = category.toLowerCase().trim();
     const reward = card.reward_points?.find(
-      (reward) => reward.category_name === category
+      (reward) =>
+        reward.category_name.toLowerCase().trim() === normalizedCategory
     );
     return reward
       ? `You'll earn ${reward.bonus_point} ${reward.multiplier_type} for your spending.`
       : null;
   };
+  
 
   if (!user) {
     // Non-logged-in user view
@@ -148,7 +174,9 @@ const HomePage = () => {
   const leafCategories = processCategories(spendingCategories);
 
   const spendingRecommendations = leafCategories.map((category) => {
+    console.log("Processing Category:", category);
     const recommendedCards = getBestCardForCategory(category);
+    console.log("Recommended Cards for Category:", category, recommendedCards);
     return {
       category,
       cards: recommendedCards.map((card) => ({
@@ -156,7 +184,7 @@ const HomePage = () => {
         bonusDetails: getCardBonusDetails(card, category),
       })),
     };
-  });
+  });  
 
   return (
     <div className="container">

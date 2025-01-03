@@ -8,6 +8,9 @@ wallet_routes = Blueprint('wallets', __name__)
 @wallet_routes.route('/session', methods=["GET"])
 @login_required
 def get_current_user_wallet():
+    """
+    Retrieve the current user's wallet profile with cards and reward points.
+    """
     print(f"Fetching wallet for user ID: {current_user.id}")  # Debugging log
     wallet = Wallet.query.filter_by(user_id=current_user.id).first()
     if not wallet:
@@ -15,23 +18,32 @@ def get_current_user_wallet():
         return {"message": "Wallet not found!"}, 404
 
     wallet_details = {
-    "id": wallet.id,
-    "cards": [
-        {
-            "id": card.id,
-            "name": card.name,
-            "nickname": wallet_card.nickname,
-            "network": wallet_card.network.replace("_", " "),
-            "issuer": card.issuer.replace("_", " "),  # Remove underscores
-            "image_url": card.image_url,
-            "url": card.url,
-        }
-        for wallet_card in wallet.wallet_cards
-        for card in [wallet_card.card]
-    ],
-}
+        "id": wallet.id,
+        "cards": [
+            {
+                "id": card.id,
+                "name": card.name,
+                "nickname": wallet_card.nickname,
+                "network": wallet_card.network.replace("_", " "),
+                "issuer": card.issuer.replace("_", " "),  # Remove underscores
+                "image_url": card.image_url,
+                "url": card.url,
+                "reward_points": [
+                    {
+                        "category_name": reward.category.name,
+                        "bonus_point": float(reward.bonus_point),  # Ensure numeric data is JSON-serializable
+                        "multiplier_type": reward.multiplier_type,
+                    }
+                    for reward in card.reward_points  # Include reward points for the card
+                ],
+            }
+            for wallet_card in wallet.wallet_cards
+            for card in [wallet_card.card]
+        ],
+    }
     print(f"Wallet details: {wallet_details}")  # Debugging log
     return jsonify(wallet_details), 200
+
 
 # Get details of a specific card in a wallet
 @wallet_routes.route('/<int:wallet_id>/cards/<int:card_id>', methods=["GET"])
