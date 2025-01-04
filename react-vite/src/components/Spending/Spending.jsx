@@ -121,11 +121,21 @@ const Spending = () => {
   const filterValidCategories = () => {
     if (!Array.isArray(categories)) return [];
     if (!spending?.categories) return [];
+  
     const existingCategoryIds = new Set(
       spending.categories.map((cat) => cat.category_id)
     );
-    return categories.filter(([id]) => !existingCategoryIds.has(id));
+  
+    return categories.filter(([id]) => {
+      // Include categories that are not in the spending categories list
+      // and ensure their parent or child relationship is also validated
+      const isParentOrChildExcluded = spending.categories.some(
+        (cat) => cat.parent_categories_id === id || cat.category_id === id
+      );
+      return !existingCategoryIds.has(id) && !isParentOrChildExcluded;
+    });
   };
+  
 
   if (error) {
     return (
