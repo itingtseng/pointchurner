@@ -6,6 +6,7 @@ import { thunkGetAllCategories } from "../../redux/categories";
 import { thunkGetUserWallet } from "../../redux/wallet";
 import { thunkGetUserSpending } from "../../redux/spending";
 import "./homepage.css";
+import BASE_URL from "../../config";
 
 const HomePage = () => {
   const dispatch = useDispatch();
@@ -140,7 +141,7 @@ const HomePage = () => {
             cards.map((card) => (
               <Link to={`/cards/${card.id}`} key={card.id} className="card">
                 <img
-                  src={`http://localhost:8000${card.image_url}`}
+                  src={`${BASE_URL}${card.image_url}`}
                   alt={card.name}
                   className="image"
                   loading="lazy"
