@@ -4,7 +4,7 @@ import ProfileButton from "./ProfileButton";
 import OpenModalMenuItem from "./OpenModalMenuItem";
 import LoginFormModal from "../LoginFormModal";
 import SignupFormModal from "../SignupFormModal";
-import logo from "../../../src/logo.png";
+import logo from "../../logo.png";
 import "./Navigation.css";
 
 function Navigation() {
