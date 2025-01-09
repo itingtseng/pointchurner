@@ -200,7 +200,7 @@ const HomePage = () => {
                 {rec.cards.map((card) => (
                   <div key={card.id} className="card">
                     <img
-                      src={`http://localhost:8000${card.image_url}`}
+                      src={`${BASE_URL}${card.image_url}`}
                       alt={card.name}
                       className="image"
                     />

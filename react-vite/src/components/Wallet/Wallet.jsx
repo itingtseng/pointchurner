@@ -8,6 +8,7 @@ import {
   thunkRemoveCardFromWallet,
 } from "../../redux/wallet";
 import "./Wallet.css";
+import BASE_URL from "../../config";
 
 // Map issuers to their respective networks
 const issuerNetworkMap = {
@@ -399,7 +400,7 @@ useEffect(() => {
                           onClick={() => handleCardSelection(null)} // Deselect card to show all cards again
                         >
                           <img
-                            src={`http://localhost:8000${formData.selectedCard.image_url}`}
+                            src={`${BASE_URL}${formData.selectedCard.image_url}`}
                             alt={formData.selectedCard.name}
                             className="card-image"
                           />
@@ -413,7 +414,7 @@ useEffect(() => {
                             onClick={() => handleCardSelection(card)}
                           >
                             <img
-                              src={`http://localhost:8000${card.image_url}`}
+                              src={`${BASE_URL}${card.image_url}`}
                               alt={card.name}
                               className="card-image"
                             />
@@ -472,7 +473,7 @@ useEffect(() => {
               onClick={() => navigate(`/cards/${card.id}`)}
             >
               <img
-                src={`http://localhost:8000${card.image_url}`}
+                src={`${BASE_URL}${card.image_url}`}
                 alt={card.name}
                 className="card-image"
               />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./carddetail.css";
+import BASE_URL from "../../config";
 
 const CardDetail = () => {
   const { cardId } = useParams(); // Get card ID from the URL
@@ -34,7 +35,7 @@ const CardDetail = () => {
       <button onClick={() => navigate(-1)} className="back-button">Back</button>
       <h1>{card.name}</h1>
       <img
-        src={`http://localhost:8000${card.image_url}`}
+        src={`${BASE_URL}${card.image_url}`}
         alt={card.name}
         className="card-image"
       />
