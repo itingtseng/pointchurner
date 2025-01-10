@@ -12,7 +12,7 @@ class RewardPoint(db.Model):
     card_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('cards.id')), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('categories.id')), nullable=False)
     bonus_point = db.Column(db.Numeric(10, 2), nullable=False)  # Use Decimal for precise numeric handling
-    multiplier_type = db.Column(db.String(10), nullable=False)  # Examples: '%', 'x'
+    multiplier_type = db.Column(db.String(255), nullable=False)  # Examples: '%', 'x'
     notes = db.Column(db.String(255), nullable=True)  # New notes column with a max length of 255 characters
 
     # Relationships
