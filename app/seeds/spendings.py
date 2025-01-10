@@ -9,7 +9,7 @@ def seed_spendings():
         # Create spending objects and commit them to the database
         spendings = [
             Spending(user_id=1),
-            Spending(user_id=2),
+            Spending(user_id=1),
         ]
         
         # Add spendings to the session and commit to generate IDs
@@ -23,8 +23,8 @@ def seed_spendings():
 
         # Create spending categories
         spending_categories = [
-            {"spending_id": spendings[0].id, "category_id": 1},
-            {"spending_id": spendings[1].id, "category_id": 2},
+            {"spending_id": spendings[0].id, "category_id": 2},
+            {"spending_id": spendings[1].id, "category_id": 4},
         ]
 
         for sc in spending_categories:

@@ -14,11 +14,8 @@ def seed_spending_categories():
 
     # Create spending category data
     spending_categories_data = [
-        {"spending_id": spendings[0].id, "category_id": categories[0].id},
         {"spending_id": spendings[0].id, "category_id": categories[1].id},
-        {"spending_id": spendings[1].id, "category_id": categories[1].id},
-        {"spending_id": spendings[1].id, "category_id": categories[2].id},
-        {"spending_id": spendings[0].id, "category_id": categories[2].id},
+        {"spending_id": spendings[1].id, "category_id": categories[3].id},
     ]
 
     # Seed spending categories
