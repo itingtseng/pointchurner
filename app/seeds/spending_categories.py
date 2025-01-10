@@ -13,10 +13,7 @@ def seed_spending_categories():
         raise Exception("Not enough spendings or categories to seed spending categories.")
 
     # Create spending category data
-    spending_categories_data = [
-        {"spending_id": spendings[0].id, "category_id": categories[1].id},
-        {"spending_id": spendings[1].id, "category_id": categories[3].id},
-    ]
+    spending_categories_data = []
 
     # Seed spending categories
     for data in spending_categories_data:
