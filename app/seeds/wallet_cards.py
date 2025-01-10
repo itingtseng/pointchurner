@@ -18,33 +18,15 @@ def seed_wallet_cards():
         wallet_cards_data = [
             {
                 "wallet_id": wallets[0].id,
-                "card_id": cards[0].id,
+                "card_id": cards[18].id,
                 "nickname": "My Primary Card",
                 "network": "Visa",
             },
             {
                 "wallet_id": wallets[0].id,
-                "card_id": cards[1].id,
+                "card_id": cards[84].id,
                 "nickname": "Travel Rewards",
                 "network": "MasterCard",
-            },
-            {
-                "wallet_id": wallets[1].id,
-                "card_id": cards[2].id,
-                "nickname": "Cashback",
-                "network": "Discover",
-            },
-            {
-                "wallet_id": wallets[1].id,
-                "card_id": cards[3].id,
-                "nickname": "Groceries Card",
-                "network": "Amex",
-            },
-            {
-                "wallet_id": wallets[1].id,
-                "card_id": cards[4].id,
-                "nickname": None,
-                "network": "Visa",
             },
         ]
 
