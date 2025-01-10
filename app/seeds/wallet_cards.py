@@ -7,24 +7,25 @@ def seed_wallet_cards():
     Seeds wallet cards into the database, linking wallets and cards.
     """
     try:
-        # Fetch wallets and cards for seeding
+        # Fetch wallets and specific cards for seeding
         wallets = Wallet.query.all()  # Assuming wallets already exist
-        cards = Card.query.all()  # Assuming cards already exist
+        card_19 = Card.query.get(19)  # Get card with ID 19
+        card_85 = Card.query.get(85)  # Get card with ID 85
 
-        if len(wallets) < 2 or len(cards) < 5:
-            raise Exception("Not enough wallets or cards to seed wallet cards.")
+        if len(wallets) < 1 or not card_19 or not card_85:
+            raise Exception("Not enough wallets or specific cards to seed wallet cards.")
 
         # Create wallet card data
         wallet_cards_data = [
             {
-                "wallet_id": wallets[0].id,
-                "card_id": cards[19].id,
+                "wallet_id": wallets[0].id,  # Assuming at least one wallet exists
+                "card_id": card_19.id,
                 "nickname": "My Primary Card",
                 "network": "Visa",
             },
             {
                 "wallet_id": wallets[0].id,
-                "card_id": cards[85].id,
+                "card_id": card_85.id,
                 "nickname": "Travel Rewards",
                 "network": "MasterCard",
             },
