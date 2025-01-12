@@ -29,11 +29,11 @@ https://pointchurner.onrender.com/
 
 ### Connect With Me:
 
-[<img align="left" alt="TiffanyTseng | LinkedIn" width="22px" src="./logos/linkedin-logo.png" style="margin: 5px;" />][tiffany-linkedin]
+[<img align="left" alt="TiffanyTseng | LinkedIn" width="22px" src="https://github.com/Savsou/BopStop/blob/dev/assets/linkedin-logo.png" style="margin: 5px;" />][tiffany-linkedin]
 
 [tiffany-linkedin]: https://www.linkedin.com/in/ittseng/
 
-[<img align="left" alt="TiffanyTseng | Gmail" width="22px" src="./logos/email.png" style="margin: 5px;" />][tiffany-email]<br>
+[<img align="left" alt="TiffanyTseng | Gmail" width="22px" src="https://github.com/Savsou/BopStop/blob/dev/assets/email.png" style="margin: 5px;" />][tiffany-email]<br>
 
 [tiffany-email]: mailto:tifny7574@gmail.com
 
