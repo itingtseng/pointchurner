@@ -45,15 +45,15 @@ https://pointchurner.onrender.com/
 
 # Landing Page
 
-<img src="https://github.com/Savsou/BopStop/blob/dev/assets/ezgif-5-f6d3c25e08.gif" alt="Demo Animation" width="830">
+<img src="https://github.com/itingtseng/pointchurner/tree/main/assets/ezgif-5-f6d3c25e08.gif" alt="Demo Animation" width="830">
 
 # Wallet
 
-<img src="https://github.com/Savsou/BopStop/blob/dev/assets/ezgif-5-433f26ddaf.gif" alt="Demo Animation" width="830">
+<img src="https://github.com/itingtseng/pointchurner/tree/main/assets/ezgif-5-433f26ddaf.gif" alt="Demo Animation" width="830">
 
 # Spending
 
-<img src="https://github.com/Savsou/BopStop/blob/dev/assets/ezgif-4-d7977fc62c.gif" alt="Demo Animation" width="830">
+<img src="https://github.com/itingtseng/pointchurner/tree/main/assets/ezgif-4-d7977fc62c.gif" alt="Demo Animation" width="830">
 
 # **API Routes**
 
