@@ -147,7 +147,7 @@ const Spending = () => {
   
     console.log("Grouped Categories:", grouped); // Debug grouped structure
     return grouped;
-  };     
+  };
 
   const filterValidCategories = () => {
     if (!Array.isArray(categories)) return [];
@@ -182,7 +182,9 @@ const Spending = () => {
   }
 
   const groupedCategories = groupCategories(spending.categories);
+  console.log("Grouped Categories after grouping:", groupedCategories); // Add this log
   const validCategories = filterValidCategories();
+  console.log("Valid Categories for Dropdown:", validCategories); // Optionally log valid categories for the dropdown
 
   return (
     <div className="spending-container">

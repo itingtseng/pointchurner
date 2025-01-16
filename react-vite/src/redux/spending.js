@@ -29,8 +29,8 @@ export const removeCategoryFromSpending = (categoryId) => ({
 export const thunkGetUserSpending = () => async (dispatch) => {
   try {
     const res = await fetch("/api/spendings/session");
-    if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
+    console.log("Fetched Spending Data:", data); // Log the spending data
     dispatch(loadUserSpending(data));
   } catch (error) {
     console.error("Error fetching user's spending:", error);
