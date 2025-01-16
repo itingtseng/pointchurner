@@ -38,69 +38,54 @@ export const thunkGetUserSpending = () => async (dispatch) => {
   }
 };
 
-export const thunkAddCategoryToSpending = (categoryData) => async (dispatch) => {
-  try {
-    const res = await fetch('/api/spendings/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(categoryData),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      dispatch(addCategoryToSpending(data.category));
-      // Refresh the spending profile after adding a category
-      const updatedSpendingRes = await fetch('/api/spendings/session');
-      if (updatedSpendingRes.ok) {
-        const updatedSpending = await updatedSpendingRes.json();
-        dispatch(loadUserSpending(updatedSpending));
+export const thunkAddCategoryToSpending =
+  (categoryData) => async (dispatch) => {
+    try {
+      const res = await fetch("/api/spendings/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(categoryData),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        dispatch(addCategoryToSpending(data.category));
+        // Refresh the spending profile after adding a category
+        const updatedSpendingRes = await fetch("/api/spendings/session");
+        if (updatedSpendingRes.ok) {
+          const updatedSpending = await updatedSpendingRes.json();
+          dispatch(loadUserSpending(updatedSpending));
+        }
+      } else {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to add category to spending");
       }
-    } else {
-      const error = await res.json();
-      throw new Error(error.message || 'Failed to add category to spending');
+    } catch (error) {
+      console.error("Error adding category to spending:", error);
+      throw error;
     }
-  } catch (error) {
-    console.error('Error adding category to spending:', error);
-    throw error;
-  }
-};
+  };
 
-
-
-export const thunkEditCategoryNotes = (categoryId, notes) => async (dispatch) => {
-  try {
-    // Make API request to update notes
-    const res = await fetch(`/api/spendings/categories/${categoryId}/notes`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notes }),
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.message || "Failed to update notes for the category.");
+  export const thunkEditCategoryNotes = (categoryId, notes) => async (dispatch) => {
+    try {
+      const res = await fetch(`/api/spendings/categories/${categoryId}/notes`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes }),
+      });
+  
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update notes for the category.");
+      }
+  
+      const data = await res.json();
+      dispatch(editCategoryNotes(data.category)); // Dispatch action to update Redux state
+    } catch (error) {
+      console.error("Error updating notes for the category:", error);
+      throw error;
     }
-
-    // Parse the updated category data
-    const data = await res.json();
-    dispatch(editCategoryNotes(data.category)); // Ensure this action updates the Redux state
-    console.log("Updated category:", data.category); // Debugging
-
-    // Refresh the spending profile to ensure the UI is in sync
-    const updatedSpendingRes = await fetch("/api/spendings/session");
-    if (updatedSpendingRes.ok) {
-      const updatedSpending = await updatedSpendingRes.json();
-      dispatch(loadUserSpending(updatedSpending)); // Dispatch action to update spending in the state
-    } else {
-      const error = await updatedSpendingRes.json();
-      throw new Error(
-        error.message || "Failed to refresh the spending profile after updating notes."
-      );
-    }
-  } catch (error) {
-    console.error("Error updating notes for the category:", error);
-    throw error;
-  }
-};
+  };
+  
 
 export const thunkRemoveCategoryFromSpending =
   (categoryId) => async (dispatch) => {
@@ -123,15 +108,15 @@ function spendingReducer(state = initialState, action) {
   switch (action.type) {
     case LOAD_USER_SPENDING:
       return { ...state, singleSpending: action.spending };
-      case ADD_CATEGORY_TO_SPENDING:
-        if (!state.singleSpending) return state;
-        return {
-          ...state,
-          singleSpending: {
-            ...state.singleSpending,
-            categories: [...state.singleSpending.categories, action.category],
-          },
-        };      
+    case ADD_CATEGORY_TO_SPENDING:
+      if (!state.singleSpending) return state;
+      return {
+        ...state,
+        singleSpending: {
+          ...state.singleSpending,
+          categories: [...state.singleSpending.categories, action.category],
+        },
+      };
     case REMOVE_CATEGORY_FROM_SPENDING:
       if (!state.singleSpending) return state;
       return {
@@ -143,19 +128,18 @@ function spendingReducer(state = initialState, action) {
           ),
         },
       };
-      case EDIT_CATEGORY_NOTES:
-        return {
-          ...state,
-          singleSpending: {
-            ...state.singleSpending,
-            categories: state.singleSpending.categories.map((cat) =>
-              cat.category_id === action.category.category_id
-                ? { ...cat, notes: action.category.notes }
-                : cat
-            ),
-          },
-        };
-      
+    case EDIT_CATEGORY_NOTES:
+      return {
+        ...state,
+        singleSpending: {
+          ...state.singleSpending,
+          categories: state.singleSpending.categories.map((category) =>
+            category.category_id === action.category.category_id
+              ? { ...category, notes: action.category.notes }
+              : category
+          ),
+        },
+      };
 
     default:
       return state;
