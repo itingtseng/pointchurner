@@ -124,13 +124,13 @@ const Spending = () => {
         // Parent category
         if (!grouped[category_id]) {
           grouped[category_id] = {
+            id: category_id,
             name: name || null,
             notes: notes || null,
             children: [],
-            id: category_id,
           };
         } else {
-          // Update parent details while preserving existing children
+          // Update parent details while preserving children
           grouped[category_id] = {
             ...grouped[category_id],
             name: name || grouped[category_id].name,
@@ -142,19 +142,20 @@ const Spending = () => {
         if (!grouped[parent_categories_id]) {
           // Initialize parent as a placeholder if not present
           grouped[parent_categories_id] = {
+            id: parent_categories_id,
             name: null,
             notes: null,
             children: [],
-            id: parent_categories_id,
           };
         }
   
         // Ensure no duplicate children are added
-        if (!grouped[parent_categories_id].children.find((child) => child.id === category_id)) {
-          grouped[parent_categories_id].children.push({
+        const parent = grouped[parent_categories_id];
+        if (!parent.children.some((child) => child.id === category_id)) {
+          parent.children.push({
+            id: category_id,
             name,
             notes,
-            id: category_id,
           });
         }
       }
@@ -169,12 +170,10 @@ const Spending = () => {
     if (!Array.isArray(categories)) return [];
     if (!spending?.categories) return [];
   
-    const existingCategoryIds = new Set(
-      spending.categories.map((cat) => cat.category_id)
-    );
+    const existingCategoryIds = new Set(spending.categories.map((cat) => cat.category_id));
   
-    return categories.filter(([id, name]) => {
-      // Include only categories not already in the spending list
+    return categories.filter(([id]) => {
+      // Exclude categories already in spending and their children
       return !existingCategoryIds.has(id);
     });
   };  
