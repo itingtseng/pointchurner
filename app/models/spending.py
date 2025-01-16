@@ -14,6 +14,7 @@ class Spending(db.Model):
         db.ForeignKey(add_prefix_for_prod('users.id'), ondelete="CASCADE"),
         nullable=False
     )
+    notes = db.Column(db.String(255), nullable=True)  # New column for notes
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now(), onupdate=db.func.now())
 
@@ -35,6 +36,7 @@ class Spending(db.Model):
         spending_dict = {
             'id': self.id,
             'user_id': self.user_id,
+            'notes': self.notes,  # Include notes in the dictionary
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -50,13 +52,14 @@ class Spending(db.Model):
         return spending_dict
 
     @staticmethod
-    def create_spending(user_id):
+    def create_spending(user_id, notes=None):
         """
         Create a new Spending instance.
 
         :param user_id: ID of the associated user.
+        :param notes: Notes for the spending entry.
         """
-        spending = Spending(user_id=user_id)
+        spending = Spending(user_id=user_id, notes=notes)
         db.session.add(spending)
         db.session.commit()
         return spending

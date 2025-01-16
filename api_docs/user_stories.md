@@ -76,9 +76,13 @@ As a logged-in user, I want to remove credit cards from my wallet. When I'm on t
 
 ---
 
-# **CATEGORIES IN SPENDING**
+Here's the updated **User Stories** with **Edit Notes in Spending** added:
 
-## **View Categories**
+---
+
+## **CATEGORIES IN SPENDING**
+
+### **View Categories**
 
 As a logged-in user, I want to view all categories in my spending profile. When I'm on the `/spending/categories` page:
 
@@ -86,7 +90,7 @@ As a logged-in user, I want to view all categories in my spending profile. When 
 
 ---
 
-## **Add Categories to Spending**
+### **Add Categories to Spending**
 
 As a logged-in user, I want to add new categories to my spending profile. When I'm on the `/spending/categories/add` page:
 
@@ -94,7 +98,17 @@ As a logged-in user, I want to add new categories to my spending profile. When I
 
 ---
 
-## **Remove Categories from Spending**
+### **Edit Notes in Spending**
+
+As a logged-in user, I want to edit notes in my spending profile. When I'm on the `/spending/edit` page:
+
+* I can view and update the notes for my spending profile. So that I can add context or details to explain or track my spending strategy.
+* I can see the current notes pre-filled in the form for easy updates.
+* Upon submitting the form, I receive a confirmation that my notes were successfully updated.
+
+---
+
+### **Remove Categories from Spending**
 
 As a logged-in user, I want to remove categories from my spending profile. When I'm on the `/spending/categories` page:
 

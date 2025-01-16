@@ -532,12 +532,59 @@
           "category_id": 1,
           "spending_id": 1,
           "name": "dining",
+          "notes": "demo",
           "parent_categories_id": 1,
         }
     }
     ```
   - **404**: Category not found.
   - **409**: Category already exists in spending profile.
+
+---
+
+### **Edit Notes in Spending**
+
+- **Method**: PUT  
+- **Route path**: `/api/spending/:spendingId/notes`  
+- **Authentication**: True  
+- **Body**:  
+  ```json
+  {
+    "notes": "Updated note content"
+  }
+  ```
+
+- **Responses**:
+  - **200**: Notes successfully updated in the spending profile.
+
+  ```json
+    {
+      "spending_id": 1,
+      "notes": "Updated note content",
+      "updatedAt": "2024-11-13T12:00:00Z"
+    }
+  ```
+  - **404**: Spending not found.
+
+  ```json
+    {
+      "message": "Spending not found."
+    }
+  ```
+  - **401**: Unauthorized access.
+
+  ```json
+    {
+      "message": "Unauthorized"
+    }
+  ```
+  - **400**: Validation error.
+
+  ```json
+    {
+      "message": "Invalid data provided."
+    }
+  ```
 
 ---
 

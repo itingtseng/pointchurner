@@ -4,15 +4,15 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   thunkGetUserSpending,
   thunkAddCategoryToSpending,
+  thunkEditCategoryNotes,
   thunkRemoveCategoryFromSpending,
 } from "../../redux/spending";
 import "./Spending.css";
 
 const capitalizeFirstLetter = (string) => {
-    if (!string) return ""; // Return an empty string if undefined or null
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-  
+  if (!string) return ""; // Return an empty string if undefined or null
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
 
 const Spending = () => {
   const dispatch = useDispatch();
@@ -22,9 +22,12 @@ const Spending = () => {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [newCategoryId, setNewCategoryId] = useState("");
+  const [newCategoryNotes, setNewCategoryNotes] = useState(""); // For adding new categories
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [categoryToRemove, setCategoryToRemove] = useState(null);
+  const [editNotes, setEditNotes] = useState({}); // State for notes per category
+  const [editMode, setEditMode] = useState(null); // Tracks the category ID being edited
   const [categoryError, setCategoryError] = useState(""); // Custom error state for dropdown
 
   useEffect(() => {
@@ -47,28 +50,49 @@ const Spending = () => {
     fetchData();
   }, [dispatch]);
 
-  const validateCategory = () => {
-    if (!newCategoryId) {
-      setCategoryError("Please select a category.");
-      return false;
-    }
-    setCategoryError("");
-    return true;
-  };
+  // const validateCategory = () => {
+  //   if (!newCategoryId) {
+  //     setCategoryError("Please select a category.");
+  //     return false;
+  //   }
+  //   setCategoryError("");
+  //   return true;
+  // };
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!validateCategory()) return;
-
+    if (!newCategoryId) {
+      setCategoryError("Please select a category.");
+      return;
+    }
+  
     try {
       await dispatch(
-        thunkAddCategoryToSpending({ category_id: parseInt(newCategoryId) })
+        thunkAddCategoryToSpending({
+          category_id: parseInt(newCategoryId),
+          notes: newCategoryNotes.trim(), // Send notes
+        })
       );
       setShowForm(false);
       setNewCategoryId("");
+      setNewCategoryNotes(""); // Reset notes field
+      setCategoryError("");
     } catch (err) {
       console.error("Error adding category to spending:", err);
       setError("An error occurred while adding the category.");
+    }
+  };  
+
+  const handleEditNotes = async (categoryId) => {
+    const notes = editNotes[categoryId]?.trim() || "";
+    try {
+      await dispatch(thunkEditCategoryNotes(categoryId, notes));
+      setEditMode(null); // Exit edit mode
+      setEditNotes((prev) => ({ ...prev, [categoryId]: "" })); // Reset notes input
+      await dispatch(thunkGetUserSpending()); // Fetch the latest state
+    } catch (err) {
+      console.error("Error editing category notes:", err);
+      setError("An error occurred while updating the notes.");
     }
   };
 
@@ -92,40 +116,47 @@ const Spending = () => {
 
   const groupCategories = (categories) => {
     const grouped = {};
-
+  
     categories.forEach((category) => {
       if (category.parent_categories_id === null) {
+        // Parent category
         grouped[category.category_id] = {
           name: category.name,
+          notes: category.notes,
           children: [],
           id: category.category_id,
         };
       } else {
+        // Child category
         if (!grouped[category.parent_categories_id]) {
+          // If parent doesn't exist yet, initialize it
           grouped[category.parent_categories_id] = {
             name: null,
+            notes: null,
             children: [],
             id: category.parent_categories_id,
           };
         }
         grouped[category.parent_categories_id].children.push({
           name: category.name,
+          notes: category.notes,
           id: category.category_id,
         });
       }
     });
-
+  
+    console.log("Grouped Categories:", grouped); // Debug grouped structure
     return grouped;
-  };
+  };     
 
   const filterValidCategories = () => {
     if (!Array.isArray(categories)) return [];
     if (!spending?.categories) return [];
-  
+
     const existingCategoryIds = new Set(
       spending.categories.map((cat) => cat.category_id)
     );
-  
+
     return categories.filter(([id]) => {
       // Include categories that are not in the spending categories list
       // and ensure their parent or child relationship is also validated
@@ -135,7 +166,6 @@ const Spending = () => {
       return !existingCategoryIds.has(id) && !isParentOrChildExcluded;
     });
   };
-  
 
   if (error) {
     return (
@@ -172,19 +202,121 @@ const Spending = () => {
                     >
                       Remove
                     </button>
+                    {editMode === group.id ? (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleEditNotes(group.id);
+                        }}
+                      >
+                        <input
+                          type="text"
+                          value={editNotes[group.id] || ""}
+                          onChange={(e) =>
+                            setEditNotes((prev) => ({
+                              ...prev,
+                              [group.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="Edit notes"
+                          maxLength={255}
+                        />
+                        <button type="submit">Save</button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditMode(null);
+                            setEditNotes((prev) => ({
+                              ...prev,
+                              [group.id]: "",
+                            }));
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </form>
+                    ) : (
+                      <div>
+                        <p>{group.notes ? group.notes : "No notes provided."}</p>
+                        <button
+                          onClick={() => {
+                            setEditMode(group.id);
+                            setEditNotes((prev) => ({
+                              ...prev,
+                              [group.id]: group.notes || "",
+                            }));
+                          }}
+                          className="edit-button"
+                        >
+                          Edit Notes
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 {group.children.length > 0 && (
                   <ul>
                     {group.children.map((child, idx) => (
                       <li key={idx}>
-                        {capitalizeFirstLetter(child.name)}
-                        <button
-                          onClick={() => confirmRemoveCategory(child.id)}
-                          className="remove-button"
-                        >
-                          Remove
-                        </button>
+                        <div>
+                          {capitalizeFirstLetter(child.name)}
+                          <button
+                            onClick={() => confirmRemoveCategory(child.id)}
+                            className="remove-button"
+                          >
+                            Remove
+                          </button>
+                          {editMode === child.id ? (
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                handleEditNotes(child.id);
+                              }}
+                            >
+                              <input
+                                type="text"
+                                value={editNotes[child.id] || ""}
+                                onChange={(e) =>
+                                  setEditNotes((prev) => ({
+                                    ...prev,
+                                    [child.id]: e.target.value,
+                                  }))
+                                }
+                                placeholder="Edit notes"
+                                maxLength={255}
+                              />
+                              <button type="submit">Save</button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditMode(null);
+                                  setEditNotes((prev) => ({
+                                    ...prev,
+                                    [child.id]: "",
+                                  }));
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            </form>
+                          ) : (
+                            <div>
+                              <p>{child.notes ? child.notes : "No notes provided."}</p>
+                              <button
+                                onClick={() => {
+                                  setEditMode(child.id);
+                                  setEditNotes((prev) => ({
+                                    ...prev,
+                                    [child.id]: child.notes || "",
+                                  }));
+                                }}
+                                className="edit-button"
+                              >
+                                Edit Notes
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -195,14 +327,14 @@ const Spending = () => {
         ) : (
           <p>No categories available in spending.</p>
         )}
-
+  
         <button
           className="add-category-button"
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? "Cancel" : "Add Category"}
         </button>
-
+  
         {showForm && (
           <form onSubmit={handleAddCategory} className="add-category-form">
             <label>
@@ -221,11 +353,20 @@ const Spending = () => {
               </select>
             </label>
             {categoryError && <p className="error-message">{categoryError}</p>}
-            <button type="submit">Submit</button>
+            <label>
+              Notes:
+              <input
+                type="text"
+                value={newCategoryNotes}
+                onChange={(e) => setNewCategoryNotes(e.target.value)}
+                placeholder="Add notes"
+                maxLength={255}
+              />
+            </label>
+            <button type="submit">Add Category</button>
           </form>
         )}
-
-        {/* Confirmation Modal */}
+  
         {showModal && (
           <div className="confirmation-modal">
             <div className="modal-content">
@@ -246,6 +387,7 @@ const Spending = () => {
       </div>
     </div>
   );
+    
 };
 
 export default Spending;

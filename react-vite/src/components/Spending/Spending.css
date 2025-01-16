@@ -33,7 +33,7 @@
     align-items: center; /* Align items vertically */
   }
 
-  .spending-details li ul li {
+  .spending-details li ul li > div {
     display: flex; /* Use flexbox for layout */
     justify-content: space-between; /* Space between content and button */
     align-items: center; /* Align items vertically */

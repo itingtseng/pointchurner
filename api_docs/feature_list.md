@@ -42,6 +42,10 @@
 ### **Add Categories to Spending**
 * Users can add categories to their spending profile to align with their daily use cases (e.g., dining, grocery, travel).
 
+### **Edit Notes in Spending**
+* Users can edit notes for their spending profile to provide additional context or details about their spending strategy.
+* Notes can be updated dynamically and saved for future reference.
+
 ### **Remove Categories from Spending**
 * Users can remove categories from their spending profile to refine their strategy.
 
@@ -74,3 +78,5 @@
 * When users add or remove cards or categories, the app dynamically updates the applying strategy to reflect the changes in their spending profile.
 
 ---
+
+### Let me know if you need further revisions or additional features!

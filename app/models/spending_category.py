@@ -1,7 +1,6 @@
 from app.models.db import db, environment, SCHEMA
 from ..utils import add_prefix_for_prod
 
-
 class SpendingCategory(db.Model):
     __tablename__ = 'spending_categories'
 
@@ -19,6 +18,7 @@ class SpendingCategory(db.Model):
         db.ForeignKey(add_prefix_for_prod('categories.id'), ondelete="CASCADE"),
         nullable=False
     )
+    notes = db.Column(db.String(255), nullable=True)  # New notes column
 
     # Relationships
     spending = db.relationship(
@@ -43,6 +43,7 @@ class SpendingCategory(db.Model):
             'id': self.id,
             'spending_id': self.spending_id,
             'category_id': self.category_id,
+            'notes': self.notes  # Include notes in output
         }
 
         if include_category and self.category:
@@ -61,16 +62,18 @@ class SpendingCategory(db.Model):
         return SpendingCategory.query.filter_by(spending_id=spending_id).all()
 
     @staticmethod
-    def create_spending_category(spending_id, category_id):
+    def create_spending_category(spending_id, category_id, notes=None):
         """
         Create a new SpendingCategory instance.
 
         :param spending_id: ID of the associated spending.
         :param category_id: ID of the associated category.
+        :param notes: Optional notes for the category.
         """
         spending_category = SpendingCategory(
             spending_id=spending_id,
-            category_id=category_id
+            category_id=category_id,
+            notes=notes  # Include notes during creation
         )
         db.session.add(spending_category)
         db.session.commit()

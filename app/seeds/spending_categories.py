@@ -12,8 +12,13 @@ def seed_spending_categories():
     if len(spendings) < 2 or len(categories) < 3:
         raise Exception("Not enough spendings or categories to seed spending categories.")
 
-    # Create spending category data
-    spending_categories_data = []
+    # Example spending category data with optional notes
+    spending_categories_data = [
+    {"spending_id": spendings[0].id, "category_id": categories[0].id, "notes": "Initial seed note 1"},
+    {"spending_id": spendings[0].id, "category_id": categories[1].id, "notes": "Initial seed note 2"},
+    {"spending_id": spendings[1].id, "category_id": categories[2].id, "notes": None},  # No notes provided
+]
+
 
     # Seed spending categories
     for data in spending_categories_data:
@@ -29,7 +34,8 @@ def seed_spending_categories():
         # Create and add the spending category
         spending_category = SpendingCategory(
             spending_id=data["spending_id"],
-            category_id=data["category_id"]
+            category_id=data["category_id"],
+            notes=data["notes"]  # Include notes if provided
         )
         db.session.add(spending_category)
 
