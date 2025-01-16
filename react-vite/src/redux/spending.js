@@ -131,19 +131,19 @@ function spendingReducer(state = initialState, action) {
         },
       };
     case EDIT_CATEGORY_NOTES:
-      const updatedState = {
+      const updatedCategories = state.singleSpending.categories.map((cat) =>
+        cat.category_id === action.category.category_id
+          ? { ...cat, notes: action.category.notes }
+          : cat
+      );
+      console.log("Updated Categories in Reducer:", updatedCategories);
+      return {
         ...state,
         singleSpending: {
           ...state.singleSpending,
-          categories: state.singleSpending.categories.map((cat) =>
-            cat.category_id === action.category.category_id
-              ? { ...cat, notes: action.category.notes }
-              : cat
-          ),
+          categories: updatedCategories,
         },
       };
-      console.log("Updated Redux State after Editing Notes:", updatedState);
-      return updatedState;
 
     default:
       return state;

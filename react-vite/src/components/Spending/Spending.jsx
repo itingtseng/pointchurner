@@ -122,7 +122,7 @@ const Spending = () => {
 
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
-  
+    
     const grouped = {};
     spending.categories.forEach((category) => {
       console.log("Processing Category:", category); // Log each category
@@ -143,6 +143,10 @@ const Spending = () => {
             id: category.parent_categories_id,
           };
         }
+        console.log("Adding Child to Parent:", {
+          parent: grouped[category.parent_categories_id],
+          child: category,
+        });
         grouped[category.parent_categories_id].children.push({
           name: category.name,
           notes: category.notes,
@@ -150,10 +154,9 @@ const Spending = () => {
         });
       }
     });
-  
-    console.log("Final Grouped Categories After Processing:", JSON.stringify(grouped, null, 2));
+    console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);  
+  }, [spending?.categories]);   
          
 
   useEffect(() => {
