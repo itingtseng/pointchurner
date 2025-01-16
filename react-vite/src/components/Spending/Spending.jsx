@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -31,17 +31,13 @@ const Spending = () => {
   const [categoryError, setCategoryError] = useState(""); // Custom error state for dropdown
 
   useEffect(() => {
-    let isMounted = true; // Flag to avoid setting state if component is unmounted
+    let isMounted = true;
     const fetchData = async () => {
       try {
-        // Fetch user spending data
         await dispatch(thunkGetUserSpending());
-        
-        // Fetch categories only if the component is still mounted
         const res = await fetch("/api/spendings/categories/form");
         if (!res.ok) throw new Error("Failed to fetch categories.");
         const data = await res.json();
-  
         if (isMounted) {
           const sortedCategories = (data.choices || []).sort((a, b) =>
             a[1].localeCompare(b[1])
@@ -49,20 +45,17 @@ const Spending = () => {
           setCategories(sortedCategories);
         }
       } catch (err) {
-        if (isMounted) {
-          console.error("Error initializing spending page:", err);
-          setError("An error occurred while fetching data.");
-        }
+        if (isMounted) setError("An error occurred while fetching data.");
+        console.error("Error fetching spending data:", err);
       }
     };
   
     fetchData();
   
-    // Cleanup function to handle component unmounting
     return () => {
       isMounted = false;
     };
-  }, [dispatch]);
+  }, [dispatch]);  
   
 
   const validateCategory = () => {
@@ -74,9 +67,10 @@ const Spending = () => {
     return true;
   };
 
-  const handleAddCategory = async (e) => {
+  const handleAddCategory = useCallback(async (e) => {
     e.preventDefault();
     if (!validateCategory()) return;
+  
     try {
       await dispatch(
         thunkAddCategoryToSpending({
@@ -92,7 +86,7 @@ const Spending = () => {
       console.error("Error adding category to spending:", err);
       setError("An error occurred while adding the category.");
     }
-  }; 
+  }, [dispatch, newCategoryId, newCategoryNotes, validateCategory]);   
 
   const handleEditNotes = async (categoryId) => {
     const notes = editNotes[categoryId]?.trim() || "";
@@ -127,7 +121,7 @@ const Spending = () => {
 
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
-    
+  
     const grouped = {};
     spending.categories.forEach((category) => {
       if (category.parent_categories_id === null) {
@@ -154,9 +148,9 @@ const Spending = () => {
       }
     });
   
-    console.log("Grouped Categories:", grouped); // Logs only when recalculated
+    console.log("Grouped Categories:", grouped); // Debug log only when recomputed
     return grouped;
-  }, [spending.categories]);
+  }, [spending?.categories]);  
   
 
   const validCategories = useMemo(() => {
