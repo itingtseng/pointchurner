@@ -125,6 +125,8 @@ const Spending = () => {
   
     const grouped = {};
     spending.categories.forEach((category) => {
+      console.log("Processing Category:", category); // Log each category being processed
+  
       if (category.parent_categories_id === null) {
         grouped[category.category_id] = {
           name: category.name,
@@ -149,8 +151,9 @@ const Spending = () => {
       }
     });
   
+    console.log("Final Grouped Categories:", grouped); // Log final grouped object
     return grouped;
-  }, [spending?.categories]);    
+  }, [spending?.categories]);      
 
   useEffect(() => {
     // Log Redux spending data when it changes

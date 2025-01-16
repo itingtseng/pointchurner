@@ -30,7 +30,8 @@ export const thunkGetUserSpending = () => async (dispatch) => {
   try {
     const res = await fetch("/api/spendings/session");
     const data = await res.json();
-    console.log("Fetched Spending Data (categories):", data.categories); // Log raw categories
+    console.log("Fetched Spending Data (raw):", data); // Log raw spending data
+    console.log("Fetched Spending Data (categories):", data.categories); // Log categories specifically
     dispatch(loadUserSpending(data));
   } catch (error) {
     console.error("Error fetching user's spending:", error);
@@ -60,8 +61,7 @@ export const thunkAddCategoryToSpending =
     }
   };
 
-
-  export const thunkEditCategoryNotes =
+export const thunkEditCategoryNotes =
   (categoryId, notes) => async (dispatch) => {
     try {
       const res = await fetch(`/api/spendings/categories/${categoryId}/notes`, {
@@ -84,7 +84,6 @@ export const thunkAddCategoryToSpending =
     }
   };
 
-
 export const thunkRemoveCategoryFromSpending =
   (categoryId) => async (dispatch) => {
     try {
@@ -105,16 +104,19 @@ const initialState = { singleSpending: null };
 function spendingReducer(state = initialState, action) {
   switch (action.type) {
     case LOAD_USER_SPENDING:
+      console.log("Loading Spending into State:", action.spending);
       return { ...state, singleSpending: action.spending };
-      case ADD_CATEGORY_TO_SPENDING:
-        if (!state.singleSpending) return state;
-        return {
-          ...state,
-          singleSpending: {
-            ...state.singleSpending,
-            categories: [...state.singleSpending.categories, action.category],
-          },
-        };      
+
+    case ADD_CATEGORY_TO_SPENDING:
+      if (!state.singleSpending) return state;
+      return {
+        ...state,
+        singleSpending: {
+          ...state.singleSpending,
+          categories: [...state.singleSpending.categories, action.category],
+        },
+      };
+
     case REMOVE_CATEGORY_FROM_SPENDING:
       if (!state.singleSpending) return state;
       return {
@@ -126,19 +128,18 @@ function spendingReducer(state = initialState, action) {
           ),
         },
       };
-      case EDIT_CATEGORY_NOTES:
-        return {
-          ...state,
-          singleSpending: {
-            ...state.singleSpending,
-            categories: state.singleSpending.categories.map((cat) =>
-              cat.category_id === action.category.category_id
-                ? { ...cat, notes: action.category.notes }
-                : cat
-            ),
-          },
-        };
-      
+    case EDIT_CATEGORY_NOTES:
+      return {
+        ...state,
+        singleSpending: {
+          ...state.singleSpending,
+          categories: state.singleSpending.categories.map((cat) =>
+            cat.category_id === action.category.category_id
+              ? { ...cat, notes: action.category.notes }
+              : cat
+          ),
+        },
+      };
 
     default:
       return state;

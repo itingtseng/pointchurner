@@ -26,6 +26,10 @@ def get_current_user_spending():
     spending = Spending.query.filter_by(user_id=current_user.id).first()
     if not spending:
         return {"message": "Spending profile not found!"}, 404
+    
+    all_categories = SpendingCategory.query.filter_by(spending_id=spending.id).all()
+    print(f"All Categories in DB for Spending ID {spending.id}: {[format_category(sc) for sc in all_categories]}")
+
 
     # Ensure spending categories include notes
     categories = [
@@ -38,6 +42,8 @@ def get_current_user_spending():
         }
         for sc in spending.categories
     ]
+    print(f"Fetched Categories for Spending ID {spending.id}: {categories}")
+
 
     spending_details = {
         "id": spending.id,
@@ -60,6 +66,7 @@ def get_add_category_form():
     categories = Category.query.all()
     form = AddCategoryToSpendingForm()
     form.category_id.choices = [(category.id, category.name) for category in categories]
+    print("Serialized Category Choices for Dropdown:", form.category_id.choices)
 
     # Serialize the choices for the frontend
     return jsonify({
@@ -113,6 +120,8 @@ def add_category_to_spending():
     existing_category_ids = {sc.category_id for sc in spending.categories}
     if category.id in existing_category_ids:
         return {"message": "Category already exists in spending profile!"}, 409
+    
+    print(f"Adding Category ID {category.id} with Notes: '{notes.strip()}' to Spending ID {spending.id}")
 
     # Add the category and update notes if provided
     try:
