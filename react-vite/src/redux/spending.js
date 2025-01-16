@@ -30,7 +30,7 @@ export const thunkGetUserSpending = () => async (dispatch) => {
   try {
     const res = await fetch("/api/spendings/session");
     const data = await res.json();
-    console.log("Fetched Spending Data:", data); // Log the spending data
+    console.log("Fetched Spending Data (categories):", data.categories); // Log raw categories
     dispatch(loadUserSpending(data));
   } catch (error) {
     console.error("Error fetching user's spending:", error);

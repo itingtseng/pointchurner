@@ -118,36 +118,43 @@ const Spending = () => {
     const grouped = {};
   
     categories.forEach((category) => {
-      if (category.parent_categories_id === null) {
-        // Parent category
-        grouped[category.category_id] = {
-          name: category.name,
-          notes: category.notes,
+      const { category_id, name, notes, parent_categories_id } = category;
+  
+      // Initialize the current category if not already in grouped
+      if (!grouped[category_id]) {
+        grouped[category_id] = {
+          id: category_id,
+          name: name || null,
+          notes: notes || null,
           children: [],
-          id: category.category_id,
         };
       } else {
-        // Child category
-        if (!grouped[category.parent_categories_id]) {
-          // If parent doesn't exist yet, initialize it
-          grouped[category.parent_categories_id] = {
+        // Update existing category's name and notes
+        grouped[category_id].name = name || grouped[category_id].name;
+        grouped[category_id].notes = notes || grouped[category_id].notes;
+      }
+  
+      // If the category is a child, link it to its parent
+      if (parent_categories_id !== null) {
+        if (!grouped[parent_categories_id]) {
+          grouped[parent_categories_id] = {
+            id: parent_categories_id,
             name: null,
             notes: null,
             children: [],
-            id: category.parent_categories_id,
           };
         }
-        grouped[category.parent_categories_id].children.push({
-          name: category.name,
-          notes: category.notes,
-          id: category.category_id,
-        });
+  
+        // Avoid duplicate child entries
+        if (!grouped[parent_categories_id].children.some((child) => child.id === category_id)) {
+          grouped[parent_categories_id].children.push(grouped[category_id]);
+        }
       }
     });
   
     console.log("Grouped Categories:", grouped); // Debug grouped structure
     return grouped;
-  };
+  };  
 
   const filterValidCategories = () => {
     if (!Array.isArray(categories)) return [];
