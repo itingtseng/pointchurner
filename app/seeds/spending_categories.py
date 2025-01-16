@@ -1,31 +1,31 @@
 from app.models import db, SpendingCategory, Spending, Category, environment, SCHEMA
 from sqlalchemy.sql import text
 
+
 def seed_spending_categories():
     """
     Seeds spending categories into the database, linking spendings and categories.
     """
-    # Fetch existing spendings and categories
+    # Fetch existing spendings
     spendings = Spending.query.all()
-    categories = Category.query.all()
 
-    if len(spendings) < 2 or len(categories) < 3:
-        raise Exception("Not enough spendings or categories to seed spending categories.")
+    if len(spendings) < 2:
+        raise Exception("Not enough spendings to seed spending categories.")
 
-    # Example spending category data with optional notes
+    # Fixed spending category data with explicit category IDs
     spending_categories_data = [
-    {"spending_id": spendings[0].id, "category_id": categories[0].id, "notes": "Initial seed note 1"},
-    {"spending_id": spendings[0].id, "category_id": categories[1].id, "notes": "Initial seed note 2"},
-    {"spending_id": spendings[1].id, "category_id": categories[2].id, "notes": None},  # No notes provided
-]
-
+        {"spending_id": spendings[0].id, "category_id": 1, "notes": "Initial seed note 1"},
+        {"spending_id": spendings[0].id, "category_id": 2, "notes": "Initial seed note 2"},
+        {"spending_id": spendings[1].id, "category_id": 3, "notes": None},  # No notes provided
+    ]
 
     # Seed spending categories
     for data in spending_categories_data:
-        # Ensure the spending and category IDs exist
+        # Fetch spending and category by ID
         spending = Spending.query.get(data["spending_id"])
         category = Category.query.get(data["category_id"])
 
+        # Validate IDs
         if not spending:
             raise Exception(f"Spending ID {data['spending_id']} not found.")
         if not category:
@@ -33,11 +33,14 @@ def seed_spending_categories():
 
         # Create and add the spending category
         spending_category = SpendingCategory(
-            spending_id=data["spending_id"],
-            category_id=data["category_id"],
-            notes=data["notes"]  # Include notes if provided
+            spending_id=spending.id,
+            category_id=category.id,
+            notes=data["notes"]
         )
         db.session.add(spending_category)
+
+        # Debugging output
+        print(f"Seeded spending category: Spending ID {spending.id}, Category ID {category.id}")
 
     # Commit changes
     db.session.commit()
