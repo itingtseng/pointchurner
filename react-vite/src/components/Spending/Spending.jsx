@@ -50,17 +50,18 @@ const Spending = () => {
     fetchData();
   }, [dispatch]);
 
-  // const validateCategory = () => {
-  //   if (!newCategoryId) {
-  //     setCategoryError("Please select a category.");
-  //     return false;
-  //   }
-  //   setCategoryError("");
-  //   return true;
-  // };
+  const validateCategory = () => {
+    if (!newCategoryId) {
+      setCategoryError("Please select a category.");
+      return false;
+    }
+    setCategoryError("");
+    return true;
+  };
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
+    if (!validateCategory()) return;
     if (!newCategoryId) {
       setCategoryError("Please select a category.");
       return;
