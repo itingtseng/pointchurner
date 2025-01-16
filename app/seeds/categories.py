@@ -42,7 +42,8 @@ def seed_categories():
         {"id": 33, "name": "surprise me", "parent_id": None},
         {"id": 34, "name": "high value", "parent_id": None},
         {"id": 35, "name": "entertainment", "parent_id": None},
-        {"id": 36, "name": "other", "parent_id": None},
+        {"id": 36, "name": "rent", "parent_id": None},
+        {"id": 37, "name": "other", "parent_id": None},
     ]
 
     # Seed categories
