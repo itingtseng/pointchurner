@@ -65,19 +65,22 @@ export const thunkAddCategoryToSpending =
     }
   };
 
-  export const thunkEditCategoryNotes = (categoryId, notes) => async (dispatch) => {
+export const thunkEditCategoryNotes =
+  (categoryId, notes) => async (dispatch) => {
     try {
       const res = await fetch(`/api/spendings/categories/${categoryId}/notes`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes }),
       });
-  
+
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.message || "Failed to update notes for the category.");
+        throw new Error(
+          error.message || "Failed to update notes for the category."
+        );
       }
-  
+
       const data = await res.json();
       dispatch(editCategoryNotes(data.category)); // Dispatch action to update Redux state
     } catch (error) {
@@ -85,7 +88,6 @@ export const thunkAddCategoryToSpending =
       throw error;
     }
   };
-  
 
 export const thunkRemoveCategoryFromSpending =
   (categoryId) => async (dispatch) => {
@@ -128,24 +130,25 @@ function spendingReducer(state = initialState, action) {
           ),
         },
       };
-      case EDIT_CATEGORY_NOTES:
-        return {
-          ...state,
-          singleSpending: {
-            ...state.singleSpending,
-            categories: state.singleSpending.categories.map((category) =>
-              category.category_id === action.category.category_id
-                ? {
-                    ...category,
-                    notes: action.category.notes, // Update parent category notes
-                  }
-                : {
-                    ...category,
-                    children: category.children || [], // Ensure children remain intact
-                  }
-            ),
-          },
-        };      
+    case EDIT_CATEGORY_NOTES:
+      return {
+        ...state,
+        singleSpending: {
+          ...state.singleSpending,
+          categories: state.singleSpending.categories.map((category) => {
+            // If the category being updated matches, update its notes
+            if (category.category_id === action.category.category_id) {
+              return {
+                ...category,
+                notes: action.category.notes,
+              };
+            }
+
+            // Otherwise, return the category as is
+            return category;
+          }),
+        },
+      };
 
     default:
       return state;

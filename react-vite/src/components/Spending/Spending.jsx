@@ -130,7 +130,7 @@ const Spending = () => {
             id: category_id,
           };
         } else {
-          // Update parent details if it was previously initialized as a placeholder
+          // Update parent details without overwriting children
           grouped[category_id] = {
             ...grouped[category_id],
             name: name || grouped[category_id].name,
@@ -140,7 +140,7 @@ const Spending = () => {
       } else {
         // Child category
         if (!grouped[parent_categories_id]) {
-          // Initialize parent as a placeholder if it doesn't exist yet
+          // Initialize parent as a placeholder if not present
           grouped[parent_categories_id] = {
             name: null,
             notes: null,
@@ -148,18 +148,22 @@ const Spending = () => {
             id: parent_categories_id,
           };
         }
-        // Add child to the parent's children array
-        grouped[parent_categories_id].children.push({
-          name,
-          notes,
-          id: category_id,
-        });
+  
+        // Ensure no duplicate children are added
+        if (!grouped[parent_categories_id].children.find((child) => child.id === category_id)) {
+          grouped[parent_categories_id].children.push({
+            name,
+            notes,
+            id: category_id,
+          });
+        }
       }
     });
   
     console.log("Grouped Categories:", grouped); // Debug grouped structure
     return grouped;
-  };   
+  };
+  
 
   const filterValidCategories = () => {
     if (!Array.isArray(categories)) return [];
