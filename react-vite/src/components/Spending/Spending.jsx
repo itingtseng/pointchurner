@@ -59,14 +59,14 @@ const Spending = () => {
   }, [dispatch]); // Dependencies are correctly limited   
   
 
-  const validateCategory = () => {
+  const validateCategory = useCallback(() => {
     if (!newCategoryId) {
       setCategoryError("Please select a category.");
       return false;
     }
     setCategoryError("");
     return true;
-  };
+  }, [newCategoryId]);  
 
   const handleAddCategory = useCallback(async (e) => {
     e.preventDefault();
@@ -149,13 +149,26 @@ const Spending = () => {
       }
     });
   
-    console.log("Grouped Categories:", grouped); // This log will now only occur when spending.categories changes
     return grouped;
-  }, [spending?.categories]);   
+  }, [spending?.categories]);    
 
   useEffect(() => {
     console.log("Initial Grouped Categories:", groupedCategories);
   }, [groupedCategories]);
+
+  useEffect(() => {
+    console.log("Redux Spending Data:", spending);
+  }, [spending]);
+
+  useEffect(() => {
+    console.log("Grouped Categories After Spending Update:", groupedCategories);
+  }, [groupedCategories]);
+
+  useEffect(() => {
+    if (spending?.categories && spending.categories.length > 0) {
+      console.log("Final Grouped Categories:", groupedCategories);
+    }
+  }, [groupedCategories, spending?.categories]);
 
 
   const validCategories = useMemo(() => {
