@@ -48,16 +48,25 @@ def seed_categories():
 
     # Seed categories
     for category in categories_data:
+        # Debug logging
+        print(f"Processing category: {category['name']}")
+        
+        # Check if category exists
         existing_category = Category.query.filter_by(name=category["name"], parent_category_id=category["parent_id"]).first()
-        if not existing_category:
+        if existing_category:
+            print(f"Skipping existing category: {category['name']}")
+        else:
+            # Create and add the new category
             new_category = Category(
                 id=category["id"],
                 name=category["name"],
                 parent_category_id=category["parent_id"]
             )
             db.session.add(new_category)
+            print(f"Created new category: {category['name']}")
 
     db.session.commit()
+    print("Categories seeded successfully.")
 
 
 def undo_categories():
