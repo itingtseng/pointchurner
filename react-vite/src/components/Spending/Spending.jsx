@@ -50,18 +50,17 @@ const Spending = () => {
     fetchData();
   }, [dispatch]);
 
-  const validateCategory = () => {
-    if (!newCategoryId) {
-      setCategoryError("Please select a category.");
-      return false;
-    }
-    setCategoryError("");
-    return true;
-  };
+  // const validateCategory = () => {
+  //   if (!newCategoryId) {
+  //     setCategoryError("Please select a category.");
+  //     return false;
+  //   }
+  //   setCategoryError("");
+  //   return true;
+  // };
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!validateCategory()) return;
     if (!newCategoryId) {
       setCategoryError("Please select a category.");
       return;
@@ -90,11 +89,12 @@ const Spending = () => {
       await dispatch(thunkEditCategoryNotes(categoryId, notes));
       setEditMode(null); // Exit edit mode
       setEditNotes((prev) => ({ ...prev, [categoryId]: "" })); // Reset notes input
+      await dispatch(thunkGetUserSpending()); // Fetch the latest state
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
-  };  
+  };
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -118,66 +118,54 @@ const Spending = () => {
     const grouped = {};
   
     categories.forEach((category) => {
-      const { category_id, name, notes, parent_categories_id } = category;
-  
-      if (parent_categories_id === null) {
+      if (category.parent_categories_id === null) {
         // Parent category
-        if (!grouped[category_id]) {
-          grouped[category_id] = {
-            id: category_id,
-            name: name || null,
-            notes: notes || null,
-            children: [],
-          };
-        } else {
-          // Update parent details while preserving children
-          grouped[category_id] = {
-            ...grouped[category_id],
-            name: name || grouped[category_id].name,
-            notes: notes || grouped[category_id].notes,
-          };
-        }
+        grouped[category.category_id] = {
+          name: category.name,
+          notes: category.notes,
+          children: [],
+          id: category.category_id,
+        };
       } else {
         // Child category
-        if (!grouped[parent_categories_id]) {
-          // Initialize parent as a placeholder if not present
-          grouped[parent_categories_id] = {
-            id: parent_categories_id,
+        if (!grouped[category.parent_categories_id]) {
+          // If parent doesn't exist yet, initialize it
+          grouped[category.parent_categories_id] = {
             name: null,
             notes: null,
             children: [],
+            id: category.parent_categories_id,
           };
         }
-  
-        // Ensure no duplicate children are added
-        const parent = grouped[parent_categories_id];
-        if (!parent.children.some((child) => child.id === category_id)) {
-          parent.children.push({
-            id: category_id,
-            name,
-            notes,
-          });
-        }
+        grouped[category.parent_categories_id].children.push({
+          name: category.name,
+          notes: category.notes,
+          id: category.category_id,
+        });
       }
     });
   
     console.log("Grouped Categories:", grouped); // Debug grouped structure
     return grouped;
-  };  
-  
+  };     
 
   const filterValidCategories = () => {
     if (!Array.isArray(categories)) return [];
     if (!spending?.categories) return [];
-  
-    const existingCategoryIds = new Set(spending.categories.map((cat) => cat.category_id));
-  
+
+    const existingCategoryIds = new Set(
+      spending.categories.map((cat) => cat.category_id)
+    );
+
     return categories.filter(([id]) => {
-      // Exclude categories already in spending and their children
-      return !existingCategoryIds.has(id);
+      // Include categories that are not in the spending categories list
+      // and ensure their parent or child relationship is also validated
+      const isParentOrChildExcluded = spending.categories.some(
+        (cat) => cat.parent_categories_id === id || cat.category_id === id
+      );
+      return !existingCategoryIds.has(id) && !isParentOrChildExcluded;
     });
-  };  
-  
+  };
 
   if (error) {
     return (
