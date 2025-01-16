@@ -31,24 +31,39 @@ const Spending = () => {
   const [categoryError, setCategoryError] = useState(""); // Custom error state for dropdown
 
   useEffect(() => {
+    let isMounted = true; // Flag to avoid setting state if component is unmounted
     const fetchData = async () => {
       try {
+        // Fetch user spending data
         await dispatch(thunkGetUserSpending());
+        
+        // Fetch categories only if the component is still mounted
         const res = await fetch("/api/spendings/categories/form");
         if (!res.ok) throw new Error("Failed to fetch categories.");
         const data = await res.json();
-        const sortedCategories = (data.choices || []).sort((a, b) =>
-          a[1].localeCompare(b[1])
-        );
-        setCategories(sortedCategories);
+  
+        if (isMounted) {
+          const sortedCategories = (data.choices || []).sort((a, b) =>
+            a[1].localeCompare(b[1])
+          );
+          setCategories(sortedCategories);
+        }
       } catch (err) {
-        console.error("Error initializing spending page:", err);
-        setError("An error occurred while fetching data.");
+        if (isMounted) {
+          console.error("Error initializing spending page:", err);
+          setError("An error occurred while fetching data.");
+        }
       }
     };
-
+  
     fetchData();
+  
+    // Cleanup function to handle component unmounting
+    return () => {
+      isMounted = false;
+    };
   }, [dispatch]);
+  
 
   const validateCategory = () => {
     if (!newCategoryId) {
@@ -111,7 +126,8 @@ const Spending = () => {
   };
 
   const groupedCategories = useMemo(() => {
-    if (!spending?.categories) return {};
+    if (!spending?.categories || !Array.isArray(spending.categories)) return {};
+    
     const grouped = {};
     spending.categories.forEach((category) => {
       if (category.parent_categories_id === null) {
@@ -137,8 +153,11 @@ const Spending = () => {
         });
       }
     });
+  
+    console.log("Grouped Categories:", grouped); // Logs only when recalculated
     return grouped;
-  }, [spending?.categories]);
+  }, [spending.categories]);
+  
 
   const validCategories = useMemo(() => {
     if (!Array.isArray(categories) || !spending?.categories) return [];
