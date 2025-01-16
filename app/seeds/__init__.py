@@ -20,23 +20,23 @@ seed_commands = AppGroup('seed')
 def seed():
     if environment == 'production':
         # Undo all data first in production
-        undo_users()
-        undo_cards()
-        undo_wallets()
-        undo_categories()
-        undo_spendings()
-        undo_reward_points()
-        undo_spending_categories()
         undo_wallet_cards()
+        undo_spending_categories()
+        undo_reward_points()
+        undo_spendings()
+        undo_categories()
+        undo_wallets()
+        undo_cards()
+        undo_users()
 
-    # Seed all data
+    # Seed all data in the correct order
     seed_users()
     seed_categories()
     seed_cards()
     update_card_images()  # Update image URLs after seeding cards
     seed_wallets()
-    seed_reward_points()
     seed_spendings()
+    seed_reward_points()
     seed_spending_categories()
     seed_wallet_cards()
 
@@ -44,11 +44,11 @@ def seed():
 # Creates the `flask seed undo` command
 @seed_commands.command('undo')
 def undo():
-    undo_wallet_cards()
-    undo_spending_categories()
+    undo_wallet_cards()           # Wallet cards depend on wallets
+    undo_spending_categories()    # Spending categories depend on categories and spendings
     undo_reward_points()
-    undo_users()
-    undo_cards()
-    undo_wallets()
-    undo_categories()
     undo_spendings()
+    undo_categories()
+    undo_wallets()
+    undo_cards()
+    undo_users()

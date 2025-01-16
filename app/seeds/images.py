@@ -7,7 +7,7 @@ def update_card_images():
     seed_images_folder = os.path.join(os.path.dirname(__file__), 'seed-images')
 
     # Loop through all card IDs and update their image_url
-    for card_id in range(1, 155):  # Card IDs are 1 to 154
+    for card_id in range(1, 157):  # Updated to include IDs 1 to 156
         # Construct the image file name
         image_file = f"{card_id}.png"
         image_path = f"/seed-images/{image_file}"  # Relative path to the image
