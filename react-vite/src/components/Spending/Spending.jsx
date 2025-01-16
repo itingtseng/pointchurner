@@ -90,12 +90,11 @@ const Spending = () => {
       await dispatch(thunkEditCategoryNotes(categoryId, notes));
       setEditMode(null); // Exit edit mode
       setEditNotes((prev) => ({ ...prev, [categoryId]: "" })); // Reset notes input
-      await dispatch(thunkGetUserSpending()); // Fetch the latest state
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
-  };
+  };  
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -119,36 +118,48 @@ const Spending = () => {
     const grouped = {};
   
     categories.forEach((category) => {
-      if (category.parent_categories_id === null) {
+      const { category_id, name, notes, parent_categories_id } = category;
+  
+      if (parent_categories_id === null) {
         // Parent category
-        grouped[category.category_id] = {
-          name: category.name,
-          notes: category.notes,
-          children: [],
-          id: category.category_id,
-        };
+        if (!grouped[category_id]) {
+          grouped[category_id] = {
+            name: name || null,
+            notes: notes || null,
+            children: [],
+            id: category_id,
+          };
+        } else {
+          // Update parent details if it was previously initialized as a placeholder
+          grouped[category_id] = {
+            ...grouped[category_id],
+            name: name || grouped[category_id].name,
+            notes: notes || grouped[category_id].notes,
+          };
+        }
       } else {
         // Child category
-        if (!grouped[category.parent_categories_id]) {
-          // If parent doesn't exist yet, initialize it
-          grouped[category.parent_categories_id] = {
+        if (!grouped[parent_categories_id]) {
+          // Initialize parent as a placeholder if it doesn't exist yet
+          grouped[parent_categories_id] = {
             name: null,
             notes: null,
             children: [],
-            id: category.parent_categories_id,
+            id: parent_categories_id,
           };
         }
-        grouped[category.parent_categories_id].children.push({
-          name: category.name,
-          notes: category.notes,
-          id: category.category_id,
+        // Add child to the parent's children array
+        grouped[parent_categories_id].children.push({
+          name,
+          notes,
+          id: category_id,
         });
       }
     });
   
     console.log("Grouped Categories:", grouped); // Debug grouped structure
     return grouped;
-  };     
+  };   
 
   const filterValidCategories = () => {
     if (!Array.isArray(categories)) return [];
