@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -50,38 +50,34 @@ const Spending = () => {
     fetchData();
   }, [dispatch]);
 
-  // const validateCategory = () => {
-  //   if (!newCategoryId) {
-  //     setCategoryError("Please select a category.");
-  //     return false;
-  //   }
-  //   setCategoryError("");
-  //   return true;
-  // };
+  const validateCategory = () => {
+    if (!newCategoryId) {
+      setCategoryError("Please select a category.");
+      return false;
+    }
+    setCategoryError("");
+    return true;
+  };
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!newCategoryId) {
-      setCategoryError("Please select a category.");
-      return;
-    }
-  
+    if (!validateCategory()) return;
     try {
       await dispatch(
         thunkAddCategoryToSpending({
           category_id: parseInt(newCategoryId),
-          notes: newCategoryNotes.trim(), // Send notes
+          notes: newCategoryNotes.trim(),
         })
       );
       setShowForm(false);
       setNewCategoryId("");
-      setNewCategoryNotes(""); // Reset notes field
+      setNewCategoryNotes("");
       setCategoryError("");
     } catch (err) {
       console.error("Error adding category to spending:", err);
       setError("An error occurred while adding the category.");
     }
-  };  
+  }; 
 
   const handleEditNotes = async (categoryId) => {
     const notes = editNotes[categoryId]?.trim() || "";
@@ -114,65 +110,48 @@ const Spending = () => {
     }
   };
 
-  const groupCategories = (categories) => {
+  const groupedCategories = useMemo(() => {
+    if (!spending?.categories) return {};
     const grouped = {};
-  
-    categories.forEach((category) => {
-      const { category_id, name, notes, parent_categories_id } = category;
-  
-      // Initialize the current category if not already in grouped
-      if (!grouped[category_id]) {
-        grouped[category_id] = {
-          id: category_id,
-          name: name || null,
-          notes: notes || null,
+    spending.categories.forEach((category) => {
+      if (category.parent_categories_id === null) {
+        grouped[category.category_id] = {
+          name: category.name,
+          notes: category.notes,
           children: [],
+          id: category.category_id,
         };
       } else {
-        // Update existing category's name and notes
-        grouped[category_id].name = name || grouped[category_id].name;
-        grouped[category_id].notes = notes || grouped[category_id].notes;
-      }
-  
-      // If the category is a child, link it to its parent
-      if (parent_categories_id !== null) {
-        if (!grouped[parent_categories_id]) {
-          grouped[parent_categories_id] = {
-            id: parent_categories_id,
+        if (!grouped[category.parent_categories_id]) {
+          grouped[category.parent_categories_id] = {
             name: null,
             notes: null,
             children: [],
+            id: category.parent_categories_id,
           };
         }
-  
-        // Avoid duplicate child entries
-        if (!grouped[parent_categories_id].children.some((child) => child.id === category_id)) {
-          grouped[parent_categories_id].children.push(grouped[category_id]);
-        }
+        grouped[category.parent_categories_id].children.push({
+          name: category.name,
+          notes: category.notes,
+          id: category.category_id,
+        });
       }
     });
-  
-    console.log("Grouped Categories:", grouped); // Debug grouped structure
     return grouped;
-  };  
+  }, [spending?.categories]);
 
-  const filterValidCategories = () => {
-    if (!Array.isArray(categories)) return [];
-    if (!spending?.categories) return [];
-
+  const validCategories = useMemo(() => {
+    if (!Array.isArray(categories) || !spending?.categories) return [];
     const existingCategoryIds = new Set(
       spending.categories.map((cat) => cat.category_id)
     );
-
     return categories.filter(([id]) => {
-      // Include categories that are not in the spending categories list
-      // and ensure their parent or child relationship is also validated
       const isParentOrChildExcluded = spending.categories.some(
         (cat) => cat.parent_categories_id === id || cat.category_id === id
       );
       return !existingCategoryIds.has(id) && !isParentOrChildExcluded;
     });
-  };
+  }, [categories, spending?.categories]);
 
   if (error) {
     return (
@@ -187,11 +166,6 @@ const Spending = () => {
   if (!spending) {
     return <div className="loading">Loading...</div>;
   }
-
-  const groupedCategories = groupCategories(spending.categories);
-  console.log("Grouped Categories after grouping:", groupedCategories); // Add this log
-  const validCategories = filterValidCategories();
-  console.log("Valid Categories for Dropdown:", validCategories); // Optionally log valid categories for the dropdown
 
   return (
     <div className="spending-container">
