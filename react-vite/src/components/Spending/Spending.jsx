@@ -38,6 +38,7 @@ const Spending = () => {
         const res = await fetch("/api/spendings/categories/form");
         if (!res.ok) throw new Error("Failed to fetch categories.");
         const data = await res.json();
+  
         if (isMounted) {
           const sortedCategories = (data.choices || []).sort((a, b) =>
             a[1].localeCompare(b[1])
@@ -55,7 +56,7 @@ const Spending = () => {
     return () => {
       isMounted = false;
     };
-  }, [dispatch]);  
+  }, [dispatch]); // Dependencies are correctly limited   
   
 
   const validateCategory = () => {
@@ -148,10 +149,14 @@ const Spending = () => {
       }
     });
   
-    console.log("Grouped Categories:", grouped); // Debug log only when recomputed
+    console.log("Grouped Categories:", grouped); // This log will now only occur when spending.categories changes
     return grouped;
-  }, [spending?.categories]);  
-  
+  }, [spending?.categories]);   
+
+  useEffect(() => {
+    console.log("Initial Grouped Categories:", groupedCategories);
+  }, [groupedCategories]);
+
 
   const validCategories = useMemo(() => {
     if (!Array.isArray(categories) || !spending?.categories) return [];
