@@ -61,7 +61,7 @@ export const thunkAddCategoryToSpending =
     }
   };
 
-  export const thunkEditCategoryNotes =
+export const thunkEditCategoryNotes =
   (categoryId, notes) => async (dispatch) => {
     try {
       const res = await fetch(`/api/spendings/categories/${categoryId}/notes`, {
@@ -69,13 +69,17 @@ export const thunkAddCategoryToSpending =
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes }),
       });
+
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.message || "Failed to update notes for the category.");
+        throw new Error(
+          error.message || "Failed to update notes for the category."
+        );
       }
+
       const data = await res.json();
-      console.log("Updated category from backend:", data.category); // Debugging
-      dispatch(editCategoryNotes(data.category)); // Ensure this action updates the state
+      console.log("Updated category from backend:", data.category); // Add this log
+      dispatch(editCategoryNotes(data.category));
     } catch (error) {
       console.error("Error updating notes for the category:", error);
       throw error;
@@ -127,17 +131,19 @@ function spendingReducer(state = initialState, action) {
         },
       };
     case EDIT_CATEGORY_NOTES:
-      return {
+      const updatedState = {
         ...state,
         singleSpending: {
           ...state.singleSpending,
           categories: state.singleSpending.categories.map((cat) =>
             cat.category_id === action.category.category_id
-              ? { ...cat, notes: action.category.notes } // Only update the `notes` field
+              ? { ...cat, notes: action.category.notes }
               : cat
           ),
         },
       };
+      console.log("Updated Redux State after Editing Notes:", updatedState);
+      return updatedState;
 
     default:
       return state;
