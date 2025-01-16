@@ -130,7 +130,7 @@ const Spending = () => {
             id: category_id,
           };
         } else {
-          // Update parent details without overwriting children
+          // Update parent details while preserving existing children
           grouped[category_id] = {
             ...grouped[category_id],
             name: name || grouped[category_id].name,
@@ -162,7 +162,7 @@ const Spending = () => {
   
     console.log("Grouped Categories:", grouped); // Debug grouped structure
     return grouped;
-  };
+  };  
   
 
   const filterValidCategories = () => {
@@ -173,11 +173,11 @@ const Spending = () => {
       spending.categories.map((cat) => cat.category_id)
     );
   
-    return categories.filter(([id]) => {
+    return categories.filter(([id, name]) => {
       // Include only categories not already in the spending list
       return !existingCategoryIds.has(id);
     });
-  };
+  };  
   
 
   if (error) {

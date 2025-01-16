@@ -130,26 +130,23 @@ function spendingReducer(state = initialState, action) {
           ),
         },
       };
-    case EDIT_CATEGORY_NOTES:
-      return {
-        ...state,
-        singleSpending: {
-          ...state.singleSpending,
-          categories: state.singleSpending.categories.map((category) => {
-            // If the category being updated matches, update its notes
-            if (category.category_id === action.category.category_id) {
-              return {
-                ...category,
-                notes: action.category.notes,
-              };
-            }
-
-            // Otherwise, return the category as is
-            return category;
-          }),
-        },
-      };
-
+      case EDIT_CATEGORY_NOTES:
+        return {
+          ...state,
+          singleSpending: {
+            ...state.singleSpending,
+            categories: state.singleSpending.categories.map((category) => {
+              if (category.category_id === action.category.category_id) {
+                return {
+                  ...category,
+                  notes: action.category.notes, // Update parent category notes
+                };
+              }
+      
+              return category;
+            }),
+          },
+        };      
     default:
       return state;
   }
