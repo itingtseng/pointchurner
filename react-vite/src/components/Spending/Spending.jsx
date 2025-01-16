@@ -125,14 +125,17 @@ const Spending = () => {
   
     const grouped = {};
     spending.categories.forEach((category) => {
-      console.log("Processing Category:", category); // Debugging each category
+      console.log("Processing Category:", category);
+  
       if (category.parent_categories_id === null) {
-        grouped[category.category_id] = {
-          name: category.name,
-          notes: category.notes,
-          children: [],
-          id: category.category_id,
-        };
+        if (!grouped[category.category_id]) {
+          grouped[category.category_id] = {
+            name: category.name,
+            notes: category.notes,
+            children: [],
+            id: category.category_id,
+          };
+        }
       } else {
         if (!grouped[category.parent_categories_id]) {
           grouped[category.parent_categories_id] = {
@@ -142,6 +145,10 @@ const Spending = () => {
             id: category.parent_categories_id,
           };
         }
+        console.log(
+          `Adding Child to Parent: Parent ID ${category.parent_categories_id}, Child:`,
+          category
+        );
         grouped[category.parent_categories_id].children.push({
           name: category.name,
           notes: category.notes,
@@ -150,9 +157,10 @@ const Spending = () => {
       }
     });
   
-    console.log("Grouped Categories After Processing:", grouped); // Debug grouped categories
+    console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);        
+  }, [spending?.categories]);
+         
 
   useEffect(() => {
     // Log Redux spending data when it changes
