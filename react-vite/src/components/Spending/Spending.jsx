@@ -153,22 +153,21 @@ const Spending = () => {
   }, [spending?.categories]);    
 
   useEffect(() => {
-    console.log("Initial Grouped Categories:", groupedCategories);
-  }, [groupedCategories]);
-
-  useEffect(() => {
+    // Log Redux spending data when it changes
     console.log("Redux Spending Data:", spending);
   }, [spending]);
-
+  
   useEffect(() => {
-    console.log("Grouped Categories After Spending Update:", groupedCategories);
+    // Log groupedCategories after it's processed
+    console.log("Grouped Categories AFTER Processing:", groupedCategories);
   }, [groupedCategories]);
-
+  
   useEffect(() => {
+    // Log the final state only when spending.categories has valid data
     if (spending?.categories && spending.categories.length > 0) {
       console.log("Final Grouped Categories:", groupedCategories);
     }
-  }, [groupedCategories, spending?.categories]);
+  }, [groupedCategories, spending?.categories]);  
 
 
   const validCategories = useMemo(() => {
