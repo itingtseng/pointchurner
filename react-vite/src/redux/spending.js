@@ -30,61 +30,67 @@ export const thunkGetUserSpending = () => async (dispatch) => {
   try {
     const res = await fetch("/api/spendings/session");
     const data = await res.json();
-    console.log("Fetched Spending Data (raw):", data); // Log raw spending data
-    console.log("Fetched Spending Data (categories):", data.categories); // Log categories specifically
-    dispatch(loadUserSpending(data));
+    console.log("Fetched Spending Data (raw):", data);
+    console.log("Fetched Spending Data (categories):", data.categories);
+    
+    // Ensure data has categories before dispatching
+    const spending = {
+      ...data,
+      categories: data.categories || [], // Default to empty array if no categories
+    };
+    
+    dispatch(loadUserSpending(spending));
   } catch (error) {
     console.error("Error fetching user's spending:", error);
     throw error;
   }
 };
 
-export const thunkAddCategoryToSpending =
-  (categoryData) => async (dispatch) => {
-    try {
-      const res = await fetch("/api/spendings/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(categoryData),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        dispatch(addCategoryToSpending(data.category)); // Use the backend response
-        await dispatch(thunkGetUserSpending()); // Fetch the updated spending profile
-      } else {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to add category to spending");
-      }
-    } catch (error) {
-      console.error("Error adding category to spending:", error);
-      throw error;
-    }
-  };
 
-export const thunkEditCategoryNotes =
-  (categoryId, notes) => async (dispatch) => {
-    try {
-      const res = await fetch(`/api/spendings/categories/${categoryId}/notes`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes }),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(
-          error.message || "Failed to update notes for the category."
-        );
-      }
-
+export const thunkAddCategoryToSpending = (categoryData) => async (dispatch) => {
+  try {
+    const res = await fetch("/api/spendings/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(categoryData),
+    });
+    if (res.ok) {
       const data = await res.json();
-      console.log("Updated category from backend:", data.category); // Add this log
-      dispatch(editCategoryNotes(data.category));
-    } catch (error) {
-      console.error("Error updating notes for the category:", error);
-      throw error;
+      dispatch(addCategoryToSpending(data.category)); // Use backend response
+      await dispatch(thunkGetUserSpending()); // Fetch the updated spending profile
+    } else {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to add category to spending");
     }
-  };
+  } catch (error) {
+    console.error("Error adding category to spending:", error);
+    throw error;
+  }
+};
+
+
+export const thunkEditCategoryNotes = (categoryId, notes) => async (dispatch) => {
+  try {
+    const res = await fetch(`/api/spendings/categories/${categoryId}/notes`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to update notes for the category.");
+    }
+
+    const data = await res.json();
+    console.log("Updated category from backend:", data.category);
+    dispatch(editCategoryNotes(data.category));
+  } catch (error) {
+    console.error("Error updating notes for the category:", error);
+    throw error;
+  }
+};
+
 
 export const thunkRemoveCategoryFromSpending =
   (categoryId) => async (dispatch) => {
@@ -101,21 +107,26 @@ export const thunkRemoveCategoryFromSpending =
   };
 
 // Reducer
-const initialState = { singleSpending: null };
+const initialState = { singleSpending: { categories: [] } }; // Start with empty categories
 
 function spendingReducer(state = initialState, action) {
   switch (action.type) {
     case LOAD_USER_SPENDING:
       console.log("Loading Spending into State:", action.spending);
-      return { ...state, singleSpending: action.spending };
+      // Handle case where categories might be empty or missing
+      return { ...state, singleSpending: action.spending || { categories: [] } };
 
     case ADD_CATEGORY_TO_SPENDING:
       if (!state.singleSpending) return state;
+      // Ensure categories is always an array, even if it is missing
       return {
         ...state,
         singleSpending: {
           ...state.singleSpending,
-          categories: [...state.singleSpending.categories, action.category],
+          categories: [
+            ...state.singleSpending.categories,
+            action.category,
+          ],
         },
       };
 
@@ -130,13 +141,15 @@ function spendingReducer(state = initialState, action) {
           ),
         },
       };
+
     case EDIT_CATEGORY_NOTES:
+      if (!state.singleSpending) return state;
       const updatedCategories = state.singleSpending.categories.map((cat) =>
         cat.category_id === action.category.category_id
           ? { ...cat, notes: action.category.notes }
           : cat
       );
-      console.log("Updated Categories in Reducer:", updatedCategories); // Log here
+      console.log("Updated Categories in Reducer:", updatedCategories);
       return {
         ...state,
         singleSpending: {

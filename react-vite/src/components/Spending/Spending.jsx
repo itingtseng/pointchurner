@@ -122,6 +122,7 @@ const Spending = () => {
   const [editNotes, setEditNotes] = useState({}); // State for notes per category
   const [editMode, setEditMode] = useState(null); // Tracks the category ID being edited
   const [categoryError, setCategoryError] = useState(""); // Custom error state for dropdown
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (spending?.categories) {
