@@ -96,11 +96,12 @@ const Spending = () => {
       setEditMode(null); // Exit edit mode
       setEditNotes((prev) => ({ ...prev, [categoryId]: "" })); // Reset notes input
       await dispatch(thunkGetUserSpending()); // Fetch the latest state
+      console.log("Notes updated successfully and state re-fetched.");
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
-  };
+  };  
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -138,7 +139,7 @@ const Spending = () => {
             id: category.category_id,
           };
         } else {
-          // Update parent details but preserve existing children
+          // Update parent details but preserve children
           grouped[category.category_id] = {
             ...grouped[category.category_id],
             name: category.name,
@@ -156,7 +157,7 @@ const Spending = () => {
           };
         }
   
-        // Avoid duplicate children
+        // Ensure no duplicate children
         const parent = grouped[category.parent_categories_id];
         if (!parent.children.some((child) => child.id === category.category_id)) {
           parent.children.push({
@@ -170,7 +171,7 @@ const Spending = () => {
   
     console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);   
+  }, [spending?.categories]);  
          
 
   useEffect(() => {
@@ -188,7 +189,18 @@ const Spending = () => {
     if (spending?.categories && spending.categories.length > 0) {
       console.log("Final Grouped Categories:", groupedCategories);
     }
-  }, [groupedCategories, spending?.categories]);  
+  }, [groupedCategories, spending?.categories]);
+  
+  // Additional debugging useEffect hooks
+  useEffect(() => {
+    if (spending?.categories) {
+      console.log("Redux Spending Categories (After Update):", spending.categories);
+    }
+  }, [spending?.categories]);
+  
+  useEffect(() => {
+    console.log("Grouped Categories AFTER Processing:", groupedCategories);
+  }, [groupedCategories]);   
 
 
   const validCategories = useMemo(() => {
