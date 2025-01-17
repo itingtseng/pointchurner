@@ -26,6 +26,7 @@ const Category = ({
 }) => (
   <li>
     <div className={isChild ? "category-child" : "category-parent"}>
+      {/* Render the category details */}
       <strong>{capitalizeFirstLetter(category.name)}</strong>
       <button
         onClick={() => confirmRemoveCategory(category.id)}
@@ -85,21 +86,23 @@ const Category = ({
       )}
     </div>
     {category.children?.length > 0 && (
-      <ul className="subcategory-list">
-        {category.children.map((child) => (
-          <Category
-            key={child.id}
-            category={child}
-            editMode={editMode}
-            editNotes={editNotes}
-            setEditMode={setEditMode}
-            setEditNotes={setEditNotes}
-            handleEditNotes={handleEditNotes}
-            confirmRemoveCategory={confirmRemoveCategory}
-            isChild={true}
-          />
-        ))}
-      </ul>
+      <li>
+        <ul className="subcategory-list">
+          {category.children.map((child) => (
+            <Category
+              key={child.id}
+              category={child}
+              editMode={editMode}
+              editNotes={editNotes}
+              setEditMode={setEditMode}
+              setEditNotes={setEditNotes}
+              handleEditNotes={handleEditNotes}
+              confirmRemoveCategory={confirmRemoveCategory}
+              isChild={true}
+            />
+          ))}
+        </ul>
+      </li>
     )}
   </li>
 );
@@ -235,32 +238,24 @@ const Spending = () => {
 
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
-
+  
     const grouped = {}; // Object to store grouped categories
     const processedIds = new Set(); // Track processed category IDs to prevent duplicates
-
+  
     spending.categories.forEach((category) => {
       const { category_id, name, notes, parent_categories_id } = category;
-
-      if (processedIds.has(category_id)) {
-        console.warn(
-          `Duplicate category detected: ${name} (ID: ${category_id})`
-        );
-        return; // Skip duplicate entries
-      }
-
+  
+      if (processedIds.has(category_id)) return; // Skip duplicates
       processedIds.add(category_id);
-
+  
       if (parent_categories_id === null) {
         // Parent category
-        grouped[category_id] = grouped[category_id] || {
+        grouped[category_id] = {
           name,
           notes,
           children: [],
           id: category_id,
         };
-        grouped[category_id].name = name;
-        grouped[category_id].notes = notes;
       } else {
         // Child category
         if (!grouped[parent_categories_id]) {
@@ -271,16 +266,17 @@ const Spending = () => {
             id: parent_categories_id,
           };
         }
-        const parent = grouped[parent_categories_id];
-        if (!parent.children.some((child) => child.id === category_id)) {
-          parent.children.push({ name, notes, id: category_id });
-        }
+        grouped[parent_categories_id].children.push({
+          name,
+          notes,
+          id: category_id,
+        });
       }
     });
-
-    console.log("Final Grouped Categories After Processing:", grouped);
+  
+    console.log("Final Grouped Categories:", grouped);
     return grouped;
-  }, [spending?.categories]);
+  }, [spending?.categories]);  
 
   useEffect(() => {
     // Log Redux spending data when it changes
