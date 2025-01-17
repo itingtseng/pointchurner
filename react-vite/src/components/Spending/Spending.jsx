@@ -138,9 +138,12 @@ const Spending = () => {
             id: category.category_id,
           };
         } else {
-          // Update parent details if it was previously added as a placeholder
-          grouped[category.category_id].name = category.name;
-          grouped[category.category_id].notes = category.notes;
+          // Update parent details but preserve children
+          grouped[category.category_id] = {
+            ...grouped[category.category_id],
+            name: category.name,
+            notes: category.notes,
+          };
         }
       } else {
         // Child category
@@ -162,7 +165,7 @@ const Spending = () => {
   
     console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);   
+  }, [spending?.categories]);  
          
 
   useEffect(() => {
