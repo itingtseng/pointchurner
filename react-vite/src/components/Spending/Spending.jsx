@@ -154,6 +154,7 @@ const Spending = () => {
       if (category.parent_categories_id === null) {
         // Handle parent categories
         if (!grouped[category.category_id]) {
+          // Initialize the parent category if it doesn't exist
           grouped[category.category_id] = {
             name: category.name,
             notes: category.notes,
@@ -162,9 +163,9 @@ const Spending = () => {
           };
           console.log(`Added parent category: '${category.name}' (ID: ${category.category_id})`);
         } else {
-          // Update the placeholder with the correct name and notes
-          grouped[category.category_id].name = category.name || grouped[category.category_id].name;
-          grouped[category.category_id].notes = category.notes || grouped[category.category_id].notes;
+          // Update only the name and notes without overwriting children
+          grouped[category.category_id].name = category.name;
+          grouped[category.category_id].notes = category.notes;
         }
       } else {
         // Handle child categories
@@ -197,16 +198,8 @@ const Spending = () => {
       }
     });
   
-    // Update placeholders with the correct data for parent categories
-    spending.categories.forEach((category) => {
-      if (category.parent_categories_id === null && grouped[category.category_id]) {
-        grouped[category.category_id].name = category.name;
-        grouped[category.category_id].notes = category.notes;
-      }
-    });
-  
     return grouped;
-  }, [spending?.categories]);   
+  }, [spending?.categories]);  
    
 
   useEffect(() => {
