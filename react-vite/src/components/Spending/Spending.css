@@ -33,6 +33,10 @@
     align-items: center; /* Align items vertically */
   }
 
+  .spending-details li > div > div {
+    width: 25%;
+  }
+
   .spending-details li ul li > div {
     display: flex; /* Use flexbox for layout */
     justify-content: space-between; /* Space between content and button */
@@ -207,3 +211,6 @@
     }
   }
   
+  .category-name{
+    width: 25%;
+  }
