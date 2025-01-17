@@ -142,46 +142,38 @@ const Spending = () => {
     const grouped = {}; // Object to store grouped categories
   
     spending.categories.forEach((category) => {
-      console.log("Processing Category:", category);
-  
       if (category.parent_categories_id === null) {
         // Parent category
-        grouped[category.category_id] = grouped[category.category_id] || {
+        grouped[category.category_id] = {
           name: category.name,
           notes: category.notes,
           children: [],
           id: category.category_id,
         };
-        grouped[category.category_id].name = category.name;
-        grouped[category.category_id].notes = category.notes;
       } else {
         // Child category
-        if (!grouped[category.parent_categories_id]) {
-          grouped[category.parent_categories_id] = {
+        const parentId = category.parent_categories_id;
+        if (!grouped[parentId]) {
+          // Initialize parent if not already present
+          grouped[parentId] = {
             name: null,
             notes: null,
             children: [],
-            id: category.parent_categories_id,
+            id: parentId,
           };
         }
   
-        const parent = grouped[category.parent_categories_id];
-        if (!parent.children.some((child) => child.id === category.category_id)) {
-          console.log(
-            `Adding child '${category.name}' to parent '${parent.name || 'unknown'}'`
-          );
-          parent.children.push({
-            name: category.name,
-            notes: category.notes,
-            id: category.category_id,
-          });
-        }
+        grouped[parentId].children.push({
+          name: category.name,
+          notes: category.notes,
+          id: category.category_id,
+        });
       }
     });
   
     console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);  
+  }, [spending?.categories]);    
 
   useEffect(() => {
     // Log Redux spending data when it changes
