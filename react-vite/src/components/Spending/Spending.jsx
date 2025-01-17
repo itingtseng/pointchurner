@@ -34,15 +34,23 @@ const Spending = () => {
     let isMounted = true;
     const fetchData = async () => {
       try {
+        // Dispatch Redux action to fetch spending data
         await dispatch(thunkGetUserSpending());
+        console.log("Fetched Spending Data (categories):", spending.categories); // Log Redux spending categories
+  
+        // Fetch available categories from API
         const res = await fetch("/api/spendings/categories/form");
         if (!res.ok) throw new Error("Failed to fetch categories.");
         const data = await res.json();
   
         if (isMounted) {
+          // Sort the categories alphabetically
           const sortedCategories = (data.choices || []).sort((a, b) =>
             a[1].localeCompare(b[1])
           );
+          console.log("Sorted Categories:", sortedCategories); // Log sorted categories
+  
+          // Set the sorted categories in local state
           setCategories(sortedCategories);
         }
       } catch (err) {
@@ -56,7 +64,7 @@ const Spending = () => {
     return () => {
       isMounted = false;
     };
-  }, [dispatch]); // Dependencies are correctly limited   
+  }, [dispatch]); // Dependency array     
   
 
   const validateCategory = useCallback(() => {
@@ -98,6 +106,7 @@ const Spending = () => {
   
       console.log("Fetching Updated Spending Data...");
       await dispatch(thunkGetUserSpending()); // Fetch the latest state
+      console.log("Redux Spending Categories After Update:", spending.categories);
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
@@ -226,6 +235,7 @@ const Spending = () => {
   if (!spending) {
     return <div className="loading">Loading...</div>;
   }
+  console.log("Grouped Categories (Before Render):", groupedCategories);
 
   return (
     <div className="spending-container">
