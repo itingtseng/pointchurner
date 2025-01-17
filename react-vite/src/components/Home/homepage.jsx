@@ -136,6 +136,7 @@ const HomePage = () => {
       <div className="container">
         <h1>Welcome!</h1>
         <h2>Explore 156 Cards</h2>
+        <p>Maximize Rewards On Every Purchase</p>
         <div className="grid-log-out">
           {cards.length > 0 ? (
             cards.map((card) => (
