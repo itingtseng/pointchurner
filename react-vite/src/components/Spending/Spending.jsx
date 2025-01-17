@@ -140,7 +140,6 @@ const Spending = () => {
             id: category.category_id,
           };
         } else {
-          // Update parent details but preserve children
           grouped[category.category_id] = {
             ...grouped[category.category_id],
             name: category.name,
@@ -158,7 +157,7 @@ const Spending = () => {
           };
         }
   
-        // Avoid duplicating children
+        // Add child to parent's children array
         const parent = grouped[category.parent_categories_id];
         if (!parent.children.some((child) => child.id === category.category_id)) {
           parent.children.push({
@@ -170,9 +169,9 @@ const Spending = () => {
       }
     });
   
-    console.log("Final Grouped Categories After Processing:", grouped); // Ensure this logs the correct data
+    console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);   
+  }, [spending?.categories]);    
     
          
   useEffect(() => {
