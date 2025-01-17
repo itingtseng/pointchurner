@@ -126,18 +126,24 @@ const Spending = () => {
     const grouped = {};
   
     spending.categories.forEach((category) => {
-      console.log("Processing Category:", category); // Log each category
+      console.log("Processing Category:", category);
   
       if (category.parent_categories_id === null) {
-        // Handle top-level categories
-        grouped[category.category_id] = {
-          name: category.name,
-          notes: category.notes,
-          children: [],
-          id: category.category_id,
-        };
+        // Parent category
+        if (!grouped[category.category_id]) {
+          grouped[category.category_id] = {
+            name: category.name,
+            notes: category.notes,
+            children: [],
+            id: category.category_id,
+          };
+        } else {
+          // Update parent details if it was previously added as a placeholder
+          grouped[category.category_id].name = category.name;
+          grouped[category.category_id].notes = category.notes;
+        }
       } else {
-        // Handle child categories
+        // Child category
         if (!grouped[category.parent_categories_id]) {
           grouped[category.parent_categories_id] = {
             name: null,
@@ -151,17 +157,12 @@ const Spending = () => {
           notes: category.notes,
           id: category.category_id,
         });
-        console.log("Adding Child to Parent:", {
-          parent: grouped[category.parent_categories_id],
-          child: category,
-        });
       }
     });
   
     console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);
-  
+  }, [spending?.categories]);   
          
 
   useEffect(() => {
