@@ -139,21 +139,21 @@ const Spending = () => {
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
   
-    const grouped = {};
+    const grouped = {}; // Object to store grouped categories
   
     spending.categories.forEach((category) => {
       console.log("Processing Category:", category);
   
       if (category.parent_categories_id === null) {
         // Parent category
-        if (!grouped[category.category_id]) {
-          grouped[category.category_id] = {
-            name: category.name,
-            notes: category.notes,
-            children: [],
-            id: category.category_id,
-          };
-        }
+        grouped[category.category_id] = grouped[category.category_id] || {
+          name: category.name,
+          notes: category.notes,
+          children: [],
+          id: category.category_id,
+        };
+        grouped[category.category_id].name = category.name;
+        grouped[category.category_id].notes = category.notes;
       } else {
         // Child category
         if (!grouped[category.parent_categories_id]) {
@@ -165,9 +165,11 @@ const Spending = () => {
           };
         }
   
-        // Add the child to the parent's children array
         const parent = grouped[category.parent_categories_id];
         if (!parent.children.some((child) => child.id === category.category_id)) {
+          console.log(
+            `Adding child '${category.name}' to parent '${parent.name || 'unknown'}'`
+          );
           parent.children.push({
             name: category.name,
             notes: category.notes,
@@ -313,7 +315,7 @@ const Spending = () => {
                 {group.children.length > 0 && (
                   <ul className="subcategory-list">
                     {group.children.map((child, idx) => {
-                      console.log("Rendering Child:", child); // Add the log here
+                      console.log("Rendering Child:", child);
                       return (
                         <li key={`child-${child.id}-${idx}`}>
                           <div className="category-child">
@@ -386,14 +388,14 @@ const Spending = () => {
         ) : (
           <p>No categories available in spending.</p>
         )}
-
+  
         <button
           className="add-category-button"
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? "Cancel" : "Add Category"}
         </button>
-
+  
         {showForm && (
           <form onSubmit={handleAddCategory} className="add-category-form">
             <label>
@@ -425,7 +427,7 @@ const Spending = () => {
             <button type="submit">Add Category</button>
           </form>
         )}
-
+  
         {showModal && (
           <div className="confirmation-modal">
             <div className="modal-content">
@@ -445,7 +447,7 @@ const Spending = () => {
         )}
       </div>
     </div>
-  );
+  );  
 };
 
 export default Spending;
