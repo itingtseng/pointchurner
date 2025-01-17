@@ -36,16 +36,6 @@ const Spending = () => {
     }
   }, [spending?.categories]);
 
-  // Log Redux spending data when it changes
-  useEffect(() => {
-    console.log("Redux Spending Data:", spending);
-  }, [spending]);
-
-  // Log API response consistency immediately after fetching
-  useEffect(() => {
-    console.log("Fetched API Data (raw):", spending?.categories);
-  }, [spending?.categories]);
-
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
@@ -118,19 +108,22 @@ const Spending = () => {
 
   const handleEditNotes = async (categoryId) => {
     const notes = editNotes[categoryId]?.trim() || "";
-    console.log(`Attempting to update notes for category ID ${categoryId} with notes: "${notes}"`);
     try {
-      const response = await dispatch(thunkEditCategoryNotes(categoryId, notes));
-      console.log("Response from thunkEditCategoryNotes:", response);
-  
-      console.log("Fetching updated spending data...");
-      await dispatch(thunkGetUserSpending());
+      await dispatch(thunkEditCategoryNotes(categoryId, notes));
+      setEditMode(null);
+      setEditNotes((prev) => ({ ...prev, [categoryId]: "" }));
+
+      console.log("Fetching Updated Spending Data...");
+      await dispatch(thunkGetUserSpending()); // Fetch the latest state
+      console.log(
+        "Redux Spending Categories After Update:",
+        spending.categories
+      );
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
   };
-      
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -150,82 +143,62 @@ const Spending = () => {
     }
   };
 
-  const handleRefreshCategories = async () => {
-    try {
-      await dispatch(thunkGetUserSpending());
-      console.log("Refreshed categories.");
-    } catch (err) {
-      console.error("Error refreshing categories:", err);
-      setError("An error occurred while refreshing categories.");
-    }
-  };
-
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
-
-    const grouped = {};
-
+  
+    const grouped = {}; // Object to store grouped categories
+  
     spending.categories.forEach((category) => {
-      const { category_id, parent_categories_id, name, notes } = category;
-
-      if (parent_categories_id === null) {
-        if (!grouped[category_id]) {
-          grouped[category_id] = {
-            name,
-            notes,
+      if (!category.category_id || !category.name) {
+        console.error("Invalid category detected:", category);
+        return; // Skip invalid categories
+      }
+  
+      if (category.parent_categories_id === null) {
+        // Handle parent categories
+        if (!grouped[category.category_id]) {
+          grouped[category.category_id] = {
+            name: category.name,
+            notes: category.notes,
             children: [],
-            id: category_id,
+            id: category.category_id,
           };
+        } else {
+          grouped[category.category_id].name = category.name;
+          grouped[category.category_id].notes = category.notes;
         }
       } else {
-        if (!grouped[parent_categories_id]) {
-          grouped[parent_categories_id] = {
-            name: "unknown",
+        // Handle child categories
+        if (!grouped[category.parent_categories_id]) {
+          grouped[category.parent_categories_id] = {
+            name: null,
             notes: null,
             children: [],
-            id: parent_categories_id,
+            id: category.parent_categories_id,
           };
         }
-
-        const parent = grouped[parent_categories_id];
-        parent.children.push({
-          name,
-          notes,
-          id: category_id,
-        });
+  
+        const parent = grouped[category.parent_categories_id];
+        const childIndex = parent.children.findIndex(
+          (child) => child.id === category.category_id
+        );
+  
+        if (childIndex === -1) {
+          parent.children.push({
+            name: category.name,
+            notes: category.notes,
+            id: category.category_id,
+          });
+        } else {
+          parent.children[childIndex].notes = category.notes;
+        }
       }
     });
-
-    console.log("Processed Grouped Categories:", grouped);
+  
     return grouped;
-  }, [spending?.categories]);
-  
-  // Log groupedCategories after it's processed
-  useEffect(() => {
-    console.log("Grouped Categories AFTER Processing:", groupedCategories);
-  }, [groupedCategories]);
+  }, [JSON.stringify(spending?.categories)]); // Explicit dependency   
+   
 
-  // Log the final state only when spending.categories has valid data
-  useEffect(() => {
-    if (spending?.categories && spending.categories.length > 0) {
-      console.log("Final Grouped Categories:", groupedCategories);
-    }
-  }, [groupedCategories, spending?.categories]);
-
-  // Log Redux categories vs groupedCategories to check for stale data
-  useEffect(() => {
-    console.log("Redux Categories vs Grouped Categories:");
-    console.log("Redux Categories:", spending?.categories);
-    console.log("Grouped Categories:", groupedCategories);
-  }, [spending?.categories, groupedCategories]);
-
-  // Log dependencies for groupedCategories useMemo
-  useEffect(() => {
-    console.log("Dependencies for groupedCategories useMemo updated:");
-    console.log("spending?.categories:", JSON.stringify(spending?.categories));
-  }, [JSON.stringify(spending?.categories)]);
-
-  
   useEffect(() => {
     // Log Redux spending data when it changes
     console.log("Redux Spending Data:", spending);
@@ -290,12 +263,6 @@ const Spending = () => {
       <h1>My Spending</h1>
       <div className="spending-details">
         <h3>Categories</h3>
-        <button
-          onClick={handleRefreshCategories}
-          className="refresh-button"
-        >
-          Refresh Categories
-        </button>
         {Object.keys(groupedCategories).length > 0 ? (
           <ul className="category-list">
             {Object.values(groupedCategories).map((group, index) => (
@@ -303,9 +270,7 @@ const Spending = () => {
                 <li>
                   {group.name && (
                     <div className="category-parent">
-                      <strong className="category-name">
-                        {capitalizeFirstLetter(group.name)}:
-                      </strong>
+                      <strong className="category-name">{capitalizeFirstLetter(group.name)}:</strong>
                       {editMode === group.id ? (
                         <form
                           onSubmit={(e) => {
@@ -365,14 +330,13 @@ const Spending = () => {
                     </div>
                   )}
                 </li>
-                {group.children && group.children.length > 0 ? (
-                  <ul className="subcategory-list">
+                {group.children.length > 0 && (
+                <>
+                  {/* <ul className="subcategory-list"> */}
                     {group.children.map((child, idx) => (
                       <li key={`child-${child.id}-${idx}`}>
                         <div className="category-child">
-                          <span className="category-name">
-                            {capitalizeFirstLetter(child.name)}
-                          </span>
+                          <span className="category-name">{capitalizeFirstLetter(child.name)}</span>
                           {editMode === child.id ? (
                             <form
                               onSubmit={(e) => {
@@ -432,9 +396,8 @@ const Spending = () => {
                         </div>
                       </li>
                     ))}
-                  </ul>
-                ) : (
-                  <p>No subcategories available.</p>
+                    {/* </ul> */}
+                  </>
                 )}
               </React.Fragment>
             ))}
