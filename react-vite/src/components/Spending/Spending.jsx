@@ -36,6 +36,41 @@ const Spending = () => {
     }
   }, [spending?.categories]);
 
+  // Log Redux spending data when it changes
+  useEffect(() => {
+    console.log("Redux Spending Data:", spending);
+  }, [spending]);
+
+  // Log API response consistency immediately after fetching
+  useEffect(() => {
+    console.log("Fetched API Data (raw):", spending?.categories);
+  }, [spending?.categories]);
+
+  // Log groupedCategories after it's processed
+  useEffect(() => {
+    console.log("Grouped Categories AFTER Processing:", groupedCategories);
+  }, [groupedCategories]);
+
+  // Log the final state only when spending.categories has valid data
+  useEffect(() => {
+    if (spending?.categories && spending.categories.length > 0) {
+      console.log("Final Grouped Categories:", groupedCategories);
+    }
+  }, [groupedCategories, spending?.categories]);
+
+  // Log Redux categories vs groupedCategories to check for stale data
+  useEffect(() => {
+    console.log("Redux Categories vs Grouped Categories:");
+    console.log("Redux Categories:", spending?.categories);
+    console.log("Grouped Categories:", groupedCategories);
+  }, [spending?.categories, groupedCategories]);
+
+  // Log dependencies for groupedCategories useMemo
+  useEffect(() => {
+    console.log("Dependencies for groupedCategories useMemo updated:");
+    console.log("spending?.categories:", JSON.stringify(spending?.categories));
+  }, [JSON.stringify(spending?.categories)]);
+
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
@@ -110,13 +145,13 @@ const Spending = () => {
     const notes = editNotes[categoryId]?.trim() || "";
     try {
       await dispatch(thunkEditCategoryNotes(categoryId, notes));
-      console.log("Fetching Updated Spending Data...");
-      await dispatch(thunkGetUserSpending()); // Ensure fresh data
+      console.log("Updated category in backend, fetching updated spending data...");
+      await dispatch(thunkGetUserSpending()); // Ensure the Redux state is refreshed
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
-  };  
+  };    
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -142,54 +177,71 @@ const Spending = () => {
     const grouped = {}; // Object to store grouped categories
   
     spending.categories.forEach((category) => {
-      if (!category.category_id || !category.name) {
+      if (!category.category_id) {
         console.error("Invalid category detected:", category);
         return; // Skip invalid categories
       }
   
-      if (category.parent_categories_id === null) {
-        // Handle parent categories
-        if (!grouped[category.category_id]) {
-          grouped[category.category_id] = {
-            name: category.name,
-            notes: category.notes,
+      const { category_id, parent_categories_id, name, notes } = category;
+  
+      if (parent_categories_id === null) {
+        // Process parent categories
+        if (!grouped[category_id]) {
+          grouped[category_id] = {
+            name,
+            notes,
             children: [],
-            id: category.category_id,
+            id: category_id,
           };
         } else {
-          grouped[category.category_id].name = category.name;
-          grouped[category.category_id].notes = category.notes;
+          // Update existing parent category
+          grouped[category_id].name = name;
+          grouped[category_id].notes = notes;
         }
       } else {
-        // Handle child categories
-        if (!grouped[category.parent_categories_id]) {
-          grouped[category.parent_categories_id] = {
+        // Process child categories
+        if (!grouped[parent_categories_id]) {
+          grouped[parent_categories_id] = {
             name: null,
             notes: null,
             children: [],
-            id: category.parent_categories_id,
+            id: parent_categories_id,
           };
         }
   
-        const parent = grouped[category.parent_categories_id];
+        const parent = grouped[parent_categories_id];
         const childIndex = parent.children.findIndex(
-          (child) => child.id === category.category_id
+          (child) => child.id === category_id
         );
   
         if (childIndex === -1) {
           parent.children.push({
-            name: category.name,
-            notes: category.notes,
-            id: category.category_id,
+            name,
+            notes,
+            id: category_id,
           });
         } else {
-          parent.children[childIndex].notes = category.notes;
+          // Update existing child notes
+          parent.children[childIndex].notes = notes;
+        }
+      }
+    });
+  
+    // Post-process placeholders to ensure no `null` names
+    Object.values(grouped).forEach((parent) => {
+      if (parent.name === null) {
+        const matchingCategory = spending.categories.find(
+          (cat) => cat.category_id === parent.id
+        );
+        if (matchingCategory) {
+          parent.name = matchingCategory.name;
+          parent.notes = matchingCategory.notes;
         }
       }
     });
   
     return grouped;
-  }, [JSON.stringify(spending?.categories)]); // Explicit dependency   
+  }, [JSON.stringify(spending?.categories)]); // Ensure deep dependencies are tracked  
    
 
   useEffect(() => {
