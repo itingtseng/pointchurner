@@ -155,7 +155,8 @@ const HomePage = () => {
           )}
         </div>
 
-        <h2>35 Categories</h2>
+        <h2>37 Categories</h2>
+        <p>Align Spending with Your Goals</p>
         <div className="categories">
           {categories.length > 0 ? (
             categories.map((category) => (
