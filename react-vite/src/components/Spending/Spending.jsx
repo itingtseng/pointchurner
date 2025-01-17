@@ -240,25 +240,27 @@ const Spending = () => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
   
     const grouped = {}; // Object to store grouped categories
-    const processedIds = new Set(); // Track processed category IDs to prevent duplicates
   
     spending.categories.forEach((category) => {
       const { category_id, name, notes, parent_categories_id } = category;
   
-      if (processedIds.has(category_id)) return; // Skip duplicates
-      processedIds.add(category_id);
+      console.log("Processing Category:", category);
   
       if (parent_categories_id === null) {
-        // Parent category
+        // Initialize parent category
         grouped[category_id] = {
           name,
           notes,
           children: [],
           id: category_id,
         };
+        console.log(`Initialized parent category: ${name} (ID: ${category_id})`);
       } else {
-        // Child category
+        // Ensure parent category exists
         if (!grouped[parent_categories_id]) {
+          console.warn(
+            `Parent category ${parent_categories_id} not found when processing child ${name} (ID: ${category_id}). Initializing missing parent.`
+          );
           grouped[parent_categories_id] = {
             name: null,
             notes: null,
@@ -266,17 +268,22 @@ const Spending = () => {
             id: parent_categories_id,
           };
         }
+        // Add child to parent
         grouped[parent_categories_id].children.push({
           name,
           notes,
           id: category_id,
         });
+        console.log(
+          `Added child category: ${name} (ID: ${category_id}) to parent category ID: ${parent_categories_id}`
+        );
       }
     });
   
-    console.log("Final Grouped Categories:", grouped);
+    console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);  
+  }, [spending?.categories]);   
+  
 
   useEffect(() => {
     // Log Redux spending data when it changes
