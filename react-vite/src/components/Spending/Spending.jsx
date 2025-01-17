@@ -138,7 +138,7 @@ const Spending = () => {
             id: category.category_id,
           };
         } else {
-          // Update parent details but preserve children
+          // Update parent details but preserve existing children
           grouped[category.category_id] = {
             ...grouped[category.category_id],
             name: category.name,
@@ -155,17 +155,22 @@ const Spending = () => {
             id: category.parent_categories_id,
           };
         }
-        grouped[category.parent_categories_id].children.push({
-          name: category.name,
-          notes: category.notes,
-          id: category.category_id,
-        });
+  
+        // Avoid duplicate children
+        const parent = grouped[category.parent_categories_id];
+        if (!parent.children.some((child) => child.id === category.category_id)) {
+          parent.children.push({
+            name: category.name,
+            notes: category.notes,
+            id: category.category_id,
+          });
+        }
       }
     });
   
     console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);  
+  }, [spending?.categories]);   
          
 
   useEffect(() => {
