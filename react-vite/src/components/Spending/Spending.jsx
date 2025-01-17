@@ -93,15 +93,16 @@ const Spending = () => {
     const notes = editNotes[categoryId]?.trim() || "";
     try {
       await dispatch(thunkEditCategoryNotes(categoryId, notes));
-      setEditMode(null); // Exit edit mode
-      setEditNotes((prev) => ({ ...prev, [categoryId]: "" })); // Reset notes input
+      setEditMode(null);
+      setEditNotes((prev) => ({ ...prev, [categoryId]: "" }));
+  
+      console.log("Fetching Updated Spending Data...");
       await dispatch(thunkGetUserSpending()); // Fetch the latest state
-      console.log("Fetched Updated Spending Data:", spending.categories); // Log here
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
-  };    
+  };      
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -130,6 +131,7 @@ const Spending = () => {
       console.log("Processing Category:", category);
   
       if (category.parent_categories_id === null) {
+        // Parent category
         if (!grouped[category.category_id]) {
           grouped[category.category_id] = {
             name: category.name,
@@ -138,6 +140,7 @@ const Spending = () => {
             id: category.category_id,
           };
         } else {
+          // Update parent details but preserve children
           grouped[category.category_id] = {
             ...grouped[category.category_id],
             name: category.name,
@@ -145,6 +148,7 @@ const Spending = () => {
           };
         }
       } else {
+        // Child category
         if (!grouped[category.parent_categories_id]) {
           grouped[category.parent_categories_id] = {
             name: null,
@@ -153,6 +157,8 @@ const Spending = () => {
             id: category.parent_categories_id,
           };
         }
+  
+        // Avoid duplicating children
         const parent = grouped[category.parent_categories_id];
         if (!parent.children.some((child) => child.id === category.category_id)) {
           parent.children.push({
@@ -164,10 +170,9 @@ const Spending = () => {
       }
     });
   
-    console.log("Final Grouped Categories After Processing:", grouped); // Log here
+    console.log("Final Grouped Categories After Processing:", grouped); // Ensure this logs the correct data
     return grouped;
-  }, [spending?.categories]);  
-  
+  }, [spending?.categories]);   
     
          
   useEffect(() => {
@@ -234,7 +239,7 @@ const Spending = () => {
         {Object.keys(groupedCategories).length > 0 ? (
           <ul className="category-list" key={JSON.stringify(groupedCategories)}>
             {Object.values(groupedCategories).map((group, index) => {
-              console.log("Rendering Group (Parent):", JSON.stringify(group, null, 2)); // Log parent group
+              console.log("Rendering Group (Parent):", JSON.stringify(group, null, 2));
               return (
                 <li key={`group-${group.id}-${index}`}>
                   {group.name && (
@@ -281,7 +286,7 @@ const Spending = () => {
                         </form>
                       ) : (
                         <div>
-                          <p>{group.notes ? group.notes : "No notes provided."}</p>
+                          <p>{group.notes || "No notes provided."}</p>
                           <button
                             onClick={() => {
                               setEditMode(group.id);
@@ -304,7 +309,7 @@ const Spending = () => {
                         console.log(
                           "Rendering Child (Category):",
                           JSON.stringify(child, null, 2)
-                        ); // Log child category
+                        );
                         return (
                           <li key={`child-${child.id}-${idx}`}>
                             <div>
@@ -350,7 +355,7 @@ const Spending = () => {
                                 </form>
                               ) : (
                                 <div>
-                                  <p>{child.notes ? child.notes : "No notes provided."}</p>
+                                  <p>{child.notes || "No notes provided."}</p>
                                   <button
                                     onClick={() => {
                                       setEditMode(child.id);
@@ -437,7 +442,7 @@ const Spending = () => {
         )}
       </div>
     </div>
-  );
+  );  
   
     
 };
