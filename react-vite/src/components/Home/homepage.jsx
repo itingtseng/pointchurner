@@ -136,17 +136,17 @@ const HomePage = () => {
       <div className="container">
         <h1>Welcome!</h1>
         <h2>Explore 154 Cards</h2>
-        <div className="grid">
+        <div className="grid-log-out">
           {cards.length > 0 ? (
             cards.map((card) => (
-              <Link to={`/cards/${card.id}`} key={card.id} className="card">
+              <Link to={`/cards/${card.id}`} key={card.id} className="card-log-out">
                 <img
                   src={`${BASE_URL}${card.image_url}`}
                   alt={card.name}
                   className="image"
                   loading="lazy"
                 />
-                <p className="cardName">{card.name}</p>
+                {/* <p className="cardName">{card.name}</p> */}
               </Link>
             ))
           ) : (
@@ -196,9 +196,9 @@ const HomePage = () => {
           <div key={index} className="recommendation">
             <h3>Category: {capitalizeWords(rec.category)}</h3>
             {rec.cards.length > 0 ? (
-              <div className="grid">
+              <div className="grid-log-in">
                 {rec.cards.map((card) => (
-                  <div key={card.id} className="card">
+                  <div key={card.id} className="card-log-in">
                     <img
                       src={`${BASE_URL}${card.image_url}`}
                       alt={card.name}

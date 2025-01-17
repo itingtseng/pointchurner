@@ -46,31 +46,6 @@ const Spending = () => {
     console.log("Fetched API Data (raw):", spending?.categories);
   }, [spending?.categories]);
 
-  // Log groupedCategories after it's processed
-  useEffect(() => {
-    console.log("Grouped Categories AFTER Processing:", groupedCategories);
-  }, [groupedCategories]);
-
-  // Log the final state only when spending.categories has valid data
-  useEffect(() => {
-    if (spending?.categories && spending.categories.length > 0) {
-      console.log("Final Grouped Categories:", groupedCategories);
-    }
-  }, [groupedCategories, spending?.categories]);
-
-  // Log Redux categories vs groupedCategories to check for stale data
-  useEffect(() => {
-    console.log("Redux Categories vs Grouped Categories:");
-    console.log("Redux Categories:", spending?.categories);
-    console.log("Grouped Categories:", groupedCategories);
-  }, [spending?.categories, groupedCategories]);
-
-  // Log dependencies for groupedCategories useMemo
-  useEffect(() => {
-    console.log("Dependencies for groupedCategories useMemo updated:");
-    console.log("spending?.categories:", JSON.stringify(spending?.categories));
-  }, [JSON.stringify(spending?.categories)]);
-
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
@@ -258,7 +233,32 @@ const Spending = () => {
 
     console.log("Final groupedCategories structure:", JSON.stringify(grouped, null, 2)); // Log the final structure
     return grouped;
-}, [JSON.stringify(spending?.categories)]);
+  }, [JSON.stringify(spending?.categories)]);
+  
+  // Log groupedCategories after it's processed
+  useEffect(() => {
+    console.log("Grouped Categories AFTER Processing:", groupedCategories);
+  }, [groupedCategories]);
+
+  // Log the final state only when spending.categories has valid data
+  useEffect(() => {
+    if (spending?.categories && spending.categories.length > 0) {
+      console.log("Final Grouped Categories:", groupedCategories);
+    }
+  }, [groupedCategories, spending?.categories]);
+
+  // Log Redux categories vs groupedCategories to check for stale data
+  useEffect(() => {
+    console.log("Redux Categories vs Grouped Categories:");
+    console.log("Redux Categories:", spending?.categories);
+    console.log("Grouped Categories:", groupedCategories);
+  }, [spending?.categories, groupedCategories]);
+
+  // Log dependencies for groupedCategories useMemo
+  useEffect(() => {
+    console.log("Dependencies for groupedCategories useMemo updated:");
+    console.log("spending?.categories:", JSON.stringify(spending?.categories));
+  }, [JSON.stringify(spending?.categories)]);
 
   
   useEffect(() => {
@@ -332,7 +332,9 @@ const Spending = () => {
                 <li>
                   {group.name && (
                     <div className="category-parent">
-                      <strong className="category-name">{capitalizeFirstLetter(group.name)}:</strong>
+                      <strong className="category-name">
+                        {capitalizeFirstLetter(group.name)}:
+                      </strong>
                       {editMode === group.id ? (
                         <form
                           onSubmit={(e) => {
@@ -392,13 +394,14 @@ const Spending = () => {
                     </div>
                   )}
                 </li>
-                {group.children.length > 0 && (
-                <>
-                  {/* <ul className="subcategory-list"> */}
+                {group.children && group.children.length > 0 ? (
+                  <ul className="subcategory-list">
                     {group.children.map((child, idx) => (
                       <li key={`child-${child.id}-${idx}`}>
                         <div className="category-child">
-                          <span className="category-name">{capitalizeFirstLetter(child.name)}</span>
+                          <span className="category-name">
+                            {capitalizeFirstLetter(child.name)}
+                          </span>
                           {editMode === child.id ? (
                             <form
                               onSubmit={(e) => {
@@ -458,8 +461,9 @@ const Spending = () => {
                         </div>
                       </li>
                     ))}
-                    {/* </ul> */}
-                  </>
+                  </ul>
+                ) : (
+                  <p>No subcategories available.</p>
                 )}
               </React.Fragment>
             ))}

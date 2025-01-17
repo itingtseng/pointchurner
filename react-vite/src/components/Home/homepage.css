@@ -3,13 +3,13 @@
     text-align: center;
   }
   
-  .grid {
+  .grid-log-in {
     display: grid;
     grid-template-columns: repeat(4, 1fr); /* 4 images per row */
     gap: 20px;
   }
   
-  .card {
+  .card-log-in {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -17,6 +17,22 @@
     border-radius: 8px;
     padding: 10px;
     background-color: #f9f9f9;
+  }
+
+  .grid-log-out {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr); /* 4 images per row */
+    gap: 20px;
+  }
+  
+  .card-log-out {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* border: 1px solid #ccc; */
+    border-radius: 8px;
+    /* padding: 10px; */
+    /* background-color: #f9f9f9; */
   }
   
   .image {
