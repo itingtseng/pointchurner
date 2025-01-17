@@ -36,7 +36,7 @@ const Spending = () => {
       try {
         // Dispatch Redux action to fetch spending data
         await dispatch(thunkGetUserSpending());
-        console.log("Fetched Spending Data (categories):", spending.categories); // Log Redux spending categories
+        // console.log("Fetched Spending Data (categories):", spending.categories); // Log Redux spending categories
 
         // Fetch available categories from API
         const res = await fetch("/api/spendings/categories/form");
