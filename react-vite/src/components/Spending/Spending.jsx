@@ -110,20 +110,13 @@ const Spending = () => {
     const notes = editNotes[categoryId]?.trim() || "";
     try {
       await dispatch(thunkEditCategoryNotes(categoryId, notes));
-      setEditMode(null);
-      setEditNotes((prev) => ({ ...prev, [categoryId]: "" }));
-
       console.log("Fetching Updated Spending Data...");
-      await dispatch(thunkGetUserSpending()); // Fetch the latest state
-      console.log(
-        "Redux Spending Categories After Update:",
-        spending.categories
-      );
+      await dispatch(thunkGetUserSpending()); // Ensure fresh data
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
-  };
+  };  
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -149,57 +142,54 @@ const Spending = () => {
     const grouped = {}; // Object to store grouped categories
   
     spending.categories.forEach((category) => {
-      console.log(`Processing category: ${category.name} (ID: ${category.category_id}, Parent ID: ${category.parent_categories_id})`);
+      if (!category.category_id || !category.name) {
+        console.error("Invalid category detected:", category);
+        return; // Skip invalid categories
+      }
   
       if (category.parent_categories_id === null) {
         // Handle parent categories
         if (!grouped[category.category_id]) {
-          // Initialize the parent category if it doesn't exist
           grouped[category.category_id] = {
             name: category.name,
             notes: category.notes,
             children: [],
             id: category.category_id,
           };
-          console.log(`Added parent category: '${category.name}' (ID: ${category.category_id})`);
         } else {
-          // Update only the name and notes without overwriting children
           grouped[category.category_id].name = category.name;
           grouped[category.category_id].notes = category.notes;
         }
       } else {
         // Handle child categories
         if (!grouped[category.parent_categories_id]) {
-          // Initialize parent category placeholder
           grouped[category.parent_categories_id] = {
             name: null,
             notes: null,
             children: [],
             id: category.parent_categories_id,
           };
-          console.log(`Initialized placeholder for parent ID: ${category.parent_categories_id}`);
         }
   
         const parent = grouped[category.parent_categories_id];
-        const childIndex = parent.children.findIndex((child) => child.id === category.category_id);
+        const childIndex = parent.children.findIndex(
+          (child) => child.id === category.category_id
+        );
   
         if (childIndex === -1) {
-          // Add new child category to parent's children array
-          console.log(`Adding child '${category.name}' (ID: ${category.category_id}) to parent '${parent.name || 'unknown'}' (ID: ${parent.id})`);
           parent.children.push({
             name: category.name,
             notes: category.notes,
             id: category.category_id,
           });
         } else {
-          // Update only the notes field of the existing child category
           parent.children[childIndex].notes = category.notes;
         }
       }
     });
   
     return grouped;
-  }, [spending?.categories]);  
+  }, [JSON.stringify(spending?.categories)]); // Explicit dependency   
    
 
   useEffect(() => {
