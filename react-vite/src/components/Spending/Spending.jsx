@@ -150,90 +150,55 @@ const Spending = () => {
     }
   };
 
+  const handleRefreshCategories = async () => {
+    try {
+      await dispatch(thunkGetUserSpending());
+      console.log("Refreshed categories.");
+    } catch (err) {
+      console.error("Error refreshing categories:", err);
+      setError("An error occurred while refreshing categories.");
+    }
+  };
+
   const groupedCategories = useMemo(() => {
-    console.log("Recomputing groupedCategories...");
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
 
-    const grouped = {}; // Object to store grouped categories
+    const grouped = {};
 
-    // First pass: Initialize parent categories
     spending.categories.forEach((category) => {
-        if (!category.category_id) {
-            console.error("Invalid category detected:", category);
-            return; // Skip invalid categories
+      const { category_id, parent_categories_id, name, notes } = category;
+
+      if (parent_categories_id === null) {
+        if (!grouped[category_id]) {
+          grouped[category_id] = {
+            name,
+            notes,
+            children: [],
+            id: category_id,
+          };
+        }
+      } else {
+        if (!grouped[parent_categories_id]) {
+          grouped[parent_categories_id] = {
+            name: "unknown",
+            notes: null,
+            children: [],
+            id: parent_categories_id,
+          };
         }
 
-        const { category_id, parent_categories_id, name, notes } = category;
-
-        if (parent_categories_id === null) {
-            // Process parent categories
-            if (!grouped[category_id]) {
-                grouped[category_id] = {
-                    name,
-                    notes,
-                    children: [],
-                    id: category_id,
-                };
-                console.log(`Initialized parent category: '${name}' (ID: ${category_id})`);
-            } else {
-                grouped[category_id].name = name || grouped[category_id].name;
-                grouped[category_id].notes = notes || grouped[category_id].notes;
-                console.log(`Updated parent category: '${name}' (ID: ${category_id})`);
-            }
-        }
+        const parent = grouped[parent_categories_id];
+        parent.children.push({
+          name,
+          notes,
+          id: category_id,
+        });
+      }
     });
 
-    // Second pass: Add children to their parents
-    spending.categories.forEach((category) => {
-        const { category_id, parent_categories_id, name, notes } = category;
-
-        if (parent_categories_id !== null) {
-            if (!grouped[parent_categories_id]) {
-                console.error(`Parent ID ${parent_categories_id} not found for child ID ${category_id}`);
-                // Fallback to ensure the parent exists
-                grouped[parent_categories_id] = {
-                    name: "unknown",
-                    notes: null,
-                    children: [],
-                    id: parent_categories_id,
-                };
-                console.warn(`Placeholder created for missing parent ID: ${parent_categories_id}`);
-            }
-
-            const parent = grouped[parent_categories_id];
-            const childIndex = parent.children.findIndex((child) => child.id === category_id);
-
-            if (childIndex === -1) {
-                parent.children.push({
-                    name,
-                    notes,
-                    id: category_id,
-                });
-                console.log(`Added child: '${name}' (ID: ${category_id}) to parent '${parent.name}'`);
-            } else {
-                parent.children[childIndex].notes = notes || parent.children[childIndex].notes;
-                console.log(`Updated child: '${name}' (ID: ${category_id})`);
-            }
-        }
-    });
-
-    // Final pass: Resolve placeholders for parent categories
-    Object.keys(grouped).forEach((parentId) => {
-        if (grouped[parentId].name === "unknown") {
-            const originalCategory = spending.categories.find(
-                (cat) => cat.category_id === parseInt(parentId, 10)
-            );
-            if (originalCategory) {
-                grouped[parentId].name = originalCategory.name;
-                grouped[parentId].notes = originalCategory.notes;
-                console.log(`Resolved placeholder for parent ID: ${parentId} with name: ${originalCategory.name}`);
-            }
-        }
-    });
-
-    console.log("Final groupedCategories structure:", JSON.stringify(grouped, null, 2)); // Log the final structure
+    console.log("Processed Grouped Categories:", grouped);
     return grouped;
-  }, [JSON.stringify(spending?.categories)]);
+  }, [spending?.categories]);
   
   // Log groupedCategories after it's processed
   useEffect(() => {
@@ -325,6 +290,12 @@ const Spending = () => {
       <h1>My Spending</h1>
       <div className="spending-details">
         <h3>Categories</h3>
+        <button
+          onClick={handleRefreshCategories}
+          className="refresh-button"
+        >
+          Refresh Categories
+        </button>
         {Object.keys(groupedCategories).length > 0 ? (
           <ul className="category-list">
             {Object.values(groupedCategories).map((group, index) => (

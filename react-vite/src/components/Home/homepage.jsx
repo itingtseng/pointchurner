@@ -135,7 +135,7 @@ const HomePage = () => {
     return (
       <div className="container">
         <h1>Welcome!</h1>
-        <h2>Explore 154 Cards</h2>
+        <h2>Explore 156 Cards</h2>
         <div className="grid-log-out">
           {cards.length > 0 ? (
             cards.map((card) => (
