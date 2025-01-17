@@ -162,13 +162,14 @@ const Spending = () => {
           };
           console.log(`Added parent category: '${category.name}' (ID: ${category.category_id})`);
         } else {
-          // Update only the notes field of the parent category
-          grouped[category.category_id].notes = category.notes;
+          // Update the placeholder with the correct name and notes
+          grouped[category.category_id].name = category.name || grouped[category.category_id].name;
+          grouped[category.category_id].notes = category.notes || grouped[category.category_id].notes;
         }
       } else {
         // Handle child categories
         if (!grouped[category.parent_categories_id]) {
-          // Initialize parent category if it doesn't exist yet
+          // Initialize parent category placeholder
           grouped[category.parent_categories_id] = {
             name: null,
             notes: null,
