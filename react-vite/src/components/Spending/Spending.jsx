@@ -149,7 +149,6 @@ const Spending = () => {
     const grouped = {}; // Object to store grouped categories
   
     spending.categories.forEach((category) => {
-      // Log the category being processed
       console.log(`Processing category: ${category.name} (ID: ${category.category_id}, Parent ID: ${category.parent_categories_id})`);
   
       if (category.parent_categories_id === null) {
@@ -163,8 +162,7 @@ const Spending = () => {
           };
           console.log(`Added parent category: '${category.name}' (ID: ${category.category_id})`);
         } else {
-          // Update parent category details if already initialized
-          grouped[category.category_id].name = category.name;
+          // Update only the notes field of the parent category
           grouped[category.category_id].notes = category.notes;
         }
       } else {
@@ -181,21 +179,25 @@ const Spending = () => {
         }
   
         const parent = grouped[category.parent_categories_id];
-        if (!parent.children.some((child) => child.id === category.category_id)) {
-          // Add child category to parent's children array
+        const childIndex = parent.children.findIndex((child) => child.id === category.category_id);
+  
+        if (childIndex === -1) {
+          // Add new child category to parent's children array
           console.log(`Adding child '${category.name}' (ID: ${category.category_id}) to parent '${parent.name || 'unknown'}' (ID: ${parent.id})`);
           parent.children.push({
             name: category.name,
             notes: category.notes,
             id: category.category_id,
           });
+        } else {
+          // Update only the notes field of the existing child category
+          parent.children[childIndex].notes = category.notes;
         }
       }
     });
   
-    console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);
+  }, [spending?.categories]);  
    
 
   useEffect(() => {
