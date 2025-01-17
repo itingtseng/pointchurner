@@ -200,17 +200,16 @@ const Spending = () => {
   );
 
   const handleEditNotes = async (categoryId) => {
-    const notes = editNotes[categoryId]?.trim() || "";
     try {
+      const notes = editNotes[categoryId]?.trim() || "";
       await dispatch(thunkEditCategoryNotes(categoryId, notes));
-      await dispatch(thunkGetUserSpending()); // Ensure state refresh
+      await dispatch(thunkGetUserSpending()); // Force a refresh of the state
       setEditMode(null);
-      setEditNotes((prev) => ({ ...prev, [categoryId]: "" }));
+      setEditNotes({});
     } catch (err) {
-      console.error("Error editing category notes:", err);
-      setError("An error occurred while updating the notes.");
+      console.error("Error updating notes:", err);
     }
-  };  
+  };
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -232,17 +231,14 @@ const Spending = () => {
 
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
-  
+
     const grouped = {};
-  
+
     spending.categories.forEach((category) => {
       const { category_id, name, notes, parent_categories_id } = category;
-  
-      if (!category_id || !name) {
-        console.warn("Skipping invalid category:", category);
-        return; // Skip invalid categories
-      }
-  
+
+      if (!category_id || !name) return; // Skip invalid categories
+
       if (parent_categories_id === null) {
         grouped[category_id] = {
           name,
@@ -253,7 +249,7 @@ const Spending = () => {
       } else {
         if (!grouped[parent_categories_id]) {
           grouped[parent_categories_id] = {
-            name: null, // Placeholder
+            name: null,
             notes: null,
             children: [],
             id: parent_categories_id,
@@ -266,10 +262,9 @@ const Spending = () => {
         });
       }
     });
-  
+
     return grouped;
-  }, [spending?.categories]);       
-  
+  }, [spending.categories]);
 
   useEffect(() => {
     // Log Redux spending data when it changes
@@ -337,9 +332,9 @@ const Spending = () => {
         <h3>Categories</h3>
         {Object.keys(groupedCategories).length > 0 ? (
           <ul className="category-list">
-            {Object.values(groupedCategories).map((group, index) => (
+            {Object.values(groupedCategories).map((group) => (
               <Category
-                key={`group-${group.id}-${index}`}
+                key={group.id} // Use a stable key based on the category ID
                 category={group}
                 editMode={editMode}
                 editNotes={editNotes}
