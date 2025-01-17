@@ -130,22 +130,20 @@ function spendingReducer(state = initialState, action) {
           ),
         },
       };
-      case EDIT_CATEGORY_NOTES:
-        if (!state.singleSpending) return state;
-      
-        const updatedCategories = state.singleSpending.categories.map((cat) =>
-          cat.category_id === action.category.category_id
-            ? { ...cat, notes: action.category.notes }
-            : cat
-        );
-      
-        return {
-          ...state,
-          singleSpending: {
-            ...state.singleSpending,
-            categories: updatedCategories,
-          },
-        };      
+    case EDIT_CATEGORY_NOTES:
+      const updatedCategories = state.singleSpending.categories.map((cat) =>
+        cat.category_id === action.category.category_id
+          ? { ...cat, notes: action.category.notes }
+          : cat
+      );
+      console.log("Updated Categories in Reducer:", updatedCategories); // Log here
+      return {
+        ...state,
+        singleSpending: {
+          ...state.singleSpending,
+          categories: updatedCategories,
+        },
+      };
 
     default:
       return state;

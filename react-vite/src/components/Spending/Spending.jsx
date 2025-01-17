@@ -96,12 +96,12 @@ const Spending = () => {
       setEditMode(null); // Exit edit mode
       setEditNotes((prev) => ({ ...prev, [categoryId]: "" })); // Reset notes input
       await dispatch(thunkGetUserSpending()); // Fetch the latest state
-      console.log("Notes updated successfully and state re-fetched.");
+      console.log("Fetched Updated Spending Data:", spending.categories); // Log here
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
-  };  
+  };    
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -130,7 +130,6 @@ const Spending = () => {
       console.log("Processing Category:", category);
   
       if (category.parent_categories_id === null) {
-        // Parent category
         if (!grouped[category.category_id]) {
           grouped[category.category_id] = {
             name: category.name,
@@ -139,7 +138,6 @@ const Spending = () => {
             id: category.category_id,
           };
         } else {
-          // Update parent details but preserve existing children
           grouped[category.category_id] = {
             ...grouped[category.category_id],
             name: category.name,
@@ -147,7 +145,6 @@ const Spending = () => {
           };
         }
       } else {
-        // Child category
         if (!grouped[category.parent_categories_id]) {
           grouped[category.parent_categories_id] = {
             name: null,
@@ -156,10 +153,7 @@ const Spending = () => {
             id: category.parent_categories_id,
           };
         }
-  
         const parent = grouped[category.parent_categories_id];
-  
-        // Ensure no duplicate children
         if (!parent.children.some((child) => child.id === category.category_id)) {
           parent.children.push({
             name: category.name,
@@ -170,9 +164,10 @@ const Spending = () => {
       }
     });
   
-    console.log("Final Grouped Categories After Processing:", grouped);
+    console.log("Final Grouped Categories After Processing:", grouped); // Log here
     return grouped;
-  }, [spending?.categories]);
+  }, [spending?.categories]);  
+  
     
          
   useEffect(() => {
