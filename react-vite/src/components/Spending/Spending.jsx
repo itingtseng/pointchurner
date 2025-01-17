@@ -197,8 +197,16 @@ const Spending = () => {
       }
     });
   
+    // Update placeholders with the correct data for parent categories
+    spending.categories.forEach((category) => {
+      if (category.parent_categories_id === null && grouped[category.category_id]) {
+        grouped[category.category_id].name = category.name;
+        grouped[category.category_id].notes = category.notes;
+      }
+    });
+  
     return grouped;
-  }, [spending?.categories]);  
+  }, [spending?.categories]);   
    
 
   useEffect(() => {
