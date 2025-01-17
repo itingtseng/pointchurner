@@ -143,15 +143,19 @@ const Spending = () => {
 
   const handleEditNotes = async (categoryId) => {
     const notes = editNotes[categoryId]?.trim() || "";
+    console.log(`Attempting to update notes for category ID ${categoryId} with notes: "${notes}"`);
     try {
-      await dispatch(thunkEditCategoryNotes(categoryId, notes));
-      console.log("Updated category in backend, fetching updated spending data...");
-      await dispatch(thunkGetUserSpending()); // Ensure the Redux state is refreshed
+      const response = await dispatch(thunkEditCategoryNotes(categoryId, notes));
+      console.log("Response from thunkEditCategoryNotes:", response);
+  
+      console.log("Fetching updated spending data...");
+      await dispatch(thunkGetUserSpending());
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
-  };    
+  };
+      
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -172,6 +176,7 @@ const Spending = () => {
   };
 
   const groupedCategories = useMemo(() => {
+    console.log("Recomputing groupedCategories...");
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
   
     const grouped = {}; // Object to store grouped categories
@@ -193,10 +198,11 @@ const Spending = () => {
             children: [],
             id: category_id,
           };
+          console.log(`Added parent category: '${name}' (ID: ${category_id})`);
         } else {
-          // Update existing parent category
-          grouped[category_id].name = name;
-          grouped[category_id].notes = notes;
+          grouped[category_id].name = name || grouped[category_id].name;
+          grouped[category_id].notes = notes || grouped[category_id].notes;
+          console.log(`Updated parent category: '${name}' (ID: ${category_id})`);
         }
       } else {
         // Process child categories
@@ -207,6 +213,7 @@ const Spending = () => {
             children: [],
             id: parent_categories_id,
           };
+          console.log(`Initialized placeholder for parent ID: ${parent_categories_id}`);
         }
   
         const parent = grouped[parent_categories_id];
@@ -220,28 +227,17 @@ const Spending = () => {
             notes,
             id: category_id,
           });
+          console.log(`Added child: '${name}' (ID: ${category_id}) to parent '${parent.name || "unknown"}'`);
         } else {
-          // Update existing child notes
-          parent.children[childIndex].notes = notes;
+          parent.children[childIndex].notes = notes || parent.children[childIndex].notes;
+          console.log(`Updated child: '${name}' (ID: ${category_id})`);
         }
       }
     });
   
-    // Post-process placeholders to ensure no `null` names
-    Object.values(grouped).forEach((parent) => {
-      if (parent.name === null) {
-        const matchingCategory = spending.categories.find(
-          (cat) => cat.category_id === parent.id
-        );
-        if (matchingCategory) {
-          parent.name = matchingCategory.name;
-          parent.notes = matchingCategory.notes;
-        }
-      }
-    });
-  
+    console.log("Processed Grouped Categories:", grouped);
     return grouped;
-  }, [JSON.stringify(spending?.categories)]); // Ensure deep dependencies are tracked  
+  }, [JSON.stringify(spending?.categories)]); // Track deep dependencies   
    
 
   useEffect(() => {
