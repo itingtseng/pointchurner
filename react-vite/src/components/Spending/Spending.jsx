@@ -203,20 +203,14 @@ const Spending = () => {
     const notes = editNotes[categoryId]?.trim() || "";
     try {
       await dispatch(thunkEditCategoryNotes(categoryId, notes));
+      await dispatch(thunkGetUserSpending()); // Ensure state refresh
       setEditMode(null);
       setEditNotes((prev) => ({ ...prev, [categoryId]: "" }));
-
-      console.log("Fetching Updated Spending Data...");
-      await dispatch(thunkGetUserSpending()); // Fetch the latest state
-      console.log(
-        "Redux Spending Categories After Update:",
-        spending.categories
-      );
     } catch (err) {
       console.error("Error editing category notes:", err);
       setError("An error occurred while updating the notes.");
     }
-  };
+  };  
 
   const confirmRemoveCategory = (categoryId) => {
     setCategoryToRemove(categoryId);
@@ -239,50 +233,42 @@ const Spending = () => {
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
   
-    const grouped = {}; // Object to store grouped categories
+    const grouped = {};
   
     spending.categories.forEach((category) => {
       const { category_id, name, notes, parent_categories_id } = category;
   
-      console.log("Processing Category:", category);
+      if (!category_id || !name) {
+        console.warn("Skipping invalid category:", category);
+        return; // Skip invalid categories
+      }
   
       if (parent_categories_id === null) {
-        // Initialize parent category
         grouped[category_id] = {
           name,
           notes,
           children: [],
           id: category_id,
         };
-        console.log(`Initialized parent category: ${name} (ID: ${category_id})`);
       } else {
-        // Ensure parent category exists
         if (!grouped[parent_categories_id]) {
-          console.warn(
-            `Parent category ${parent_categories_id} not found when processing child ${name} (ID: ${category_id}). Initializing missing parent.`
-          );
           grouped[parent_categories_id] = {
-            name: null,
+            name: null, // Placeholder
             notes: null,
             children: [],
             id: parent_categories_id,
           };
         }
-        // Add child to parent
         grouped[parent_categories_id].children.push({
           name,
           notes,
           id: category_id,
         });
-        console.log(
-          `Added child category: ${name} (ID: ${category_id}) to parent category ID: ${parent_categories_id}`
-        );
       }
     });
   
-    console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);     
+  }, [spending?.categories]);       
   
 
   useEffect(() => {
