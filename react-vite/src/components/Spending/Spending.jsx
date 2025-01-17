@@ -122,12 +122,14 @@ const Spending = () => {
 
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
-    
+  
     const grouped = {};
+  
     spending.categories.forEach((category) => {
       console.log("Processing Category:", category); // Log each category
   
       if (category.parent_categories_id === null) {
+        // Handle top-level categories
         grouped[category.category_id] = {
           name: category.name,
           notes: category.notes,
@@ -135,6 +137,7 @@ const Spending = () => {
           id: category.category_id,
         };
       } else {
+        // Handle child categories
         if (!grouped[category.parent_categories_id]) {
           grouped[category.parent_categories_id] = {
             name: null,
@@ -143,20 +146,22 @@ const Spending = () => {
             id: category.parent_categories_id,
           };
         }
-        console.log("Adding Child to Parent:", {
-          parent: grouped[category.parent_categories_id],
-          child: category,
-        });
         grouped[category.parent_categories_id].children.push({
           name: category.name,
           notes: category.notes,
           id: category.category_id,
         });
+        console.log("Adding Child to Parent:", {
+          parent: grouped[category.parent_categories_id],
+          child: category,
+        });
       }
     });
+  
     console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);   
+  }, [spending?.categories]);
+  
          
 
   useEffect(() => {
@@ -210,11 +215,11 @@ const Spending = () => {
       <div className="spending-details">
         <h3>Categories</h3>
         {Object.keys(groupedCategories).length > 0 ? (
-          <ul className="category-list">
+          <ul className="category-list" key={JSON.stringify(groupedCategories)}>
             {Object.values(groupedCategories).map((group, index) => {
-              console.log("Rendering Group (Parent):", JSON.stringify(group, null, 2)); // Log each parent group
+              console.log("Rendering Group (Parent):", JSON.stringify(group, null, 2)); // Log parent group
               return (
-                <li key={index}>
+                <li key={`group-${group.id}-${index}`}>
                   {group.name && (
                     <div>
                       <strong>{capitalizeFirstLetter(group.name)}:</strong>
@@ -282,9 +287,9 @@ const Spending = () => {
                         console.log(
                           "Rendering Child (Category):",
                           JSON.stringify(child, null, 2)
-                        ); // Log each child category
+                        ); // Log child category
                         return (
-                          <li key={idx}>
+                          <li key={`child-${child.id}-${idx}`}>
                             <div>
                               {capitalizeFirstLetter(child.name)}
                               <button
@@ -415,7 +420,8 @@ const Spending = () => {
         )}
       </div>
     </div>
-  );  
+  );
+  
     
 };
 

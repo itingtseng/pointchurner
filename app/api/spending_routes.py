@@ -52,6 +52,8 @@ def get_current_user_spending():
         "updated_at": spending.updated_at.isoformat(),
         "categories": categories,  # Pass formatted categories with notes
     }
+    print("Returning Updated Spending Data:", spending_details)
+
 
     return jsonify(spending_details), 200
 
