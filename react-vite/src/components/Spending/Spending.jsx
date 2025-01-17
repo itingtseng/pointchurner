@@ -282,7 +282,7 @@ const Spending = () => {
   
     console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
-  }, [spending?.categories]);   
+  }, [spending?.categories]);     
   
 
   useEffect(() => {
