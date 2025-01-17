@@ -14,114 +14,39 @@ const capitalizeFirstLetter = (string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-// Parent Category Component
-const ParentCategory = ({
-  group,
+const Category = ({
+  category,
   editMode,
   editNotes,
   setEditMode,
   setEditNotes,
   handleEditNotes,
   confirmRemoveCategory,
+  isChild = false,
 }) => (
   <li>
-    {group.name && (
-      <div className="category-parent">
-        <strong>{capitalizeFirstLetter(group.name)}:</strong>
-        <button
-          onClick={() => confirmRemoveCategory(group.id)}
-          className="remove-button"
-        >
-          Remove
-        </button>
-        {editMode === group.id ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleEditNotes(group.id);
-            }}
-          >
-            <input
-              type="text"
-              value={editNotes[group.id] || ""}
-              onChange={(e) =>
-                setEditNotes((prev) => ({
-                  ...prev,
-                  [group.id]: e.target.value,
-                }))
-              }
-              placeholder="Edit notes"
-              maxLength={255}
-            />
-            <button type="submit">Save</button>
-            <button
-              type="button"
-              onClick={() => {
-                setEditMode(null);
-                setEditNotes((prev) => ({
-                  ...prev,
-                  [group.id]: "",
-                }));
-              }}
-            >
-              Cancel
-            </button>
-          </form>
-        ) : (
-          <div>
-            <p>{group.notes || "No notes provided."}</p>
-            <button
-              onClick={() => {
-                setEditMode(group.id);
-                setEditNotes((prev) => ({
-                  ...prev,
-                  [group.id]: group.notes || "",
-                }));
-              }}
-              className="edit-button"
-            >
-              Edit Notes
-            </button>
-          </div>
-        )}
-      </div>
-    )}
-  </li>
-);
-
-// Child Category Component
-const ChildCategory = ({
-  child,
-  editMode,
-  editNotes,
-  setEditMode,
-  setEditNotes,
-  handleEditNotes,
-  confirmRemoveCategory,
-}) => (
-  <li>
-    <div className="category-child">
-      {capitalizeFirstLetter(child.name)}
+    <div className={isChild ? "category-child" : "category-parent"}>
+      <strong>{capitalizeFirstLetter(category.name)}</strong>
       <button
-        onClick={() => confirmRemoveCategory(child.id)}
+        onClick={() => confirmRemoveCategory(category.id)}
         className="remove-button"
       >
         Remove
       </button>
-      {editMode === child.id ? (
+      {editMode === category.id ? (
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            handleEditNotes(child.id);
+            handleEditNotes(category.id);
           }}
         >
           <input
             type="text"
-            value={editNotes[child.id] || ""}
+            value={editNotes[category.id] || ""}
             onChange={(e) =>
               setEditNotes((prev) => ({
                 ...prev,
-                [child.id]: e.target.value,
+                [category.id]: e.target.value,
               }))
             }
             placeholder="Edit notes"
@@ -134,7 +59,7 @@ const ChildCategory = ({
               setEditMode(null);
               setEditNotes((prev) => ({
                 ...prev,
-                [child.id]: "",
+                [category.id]: "",
               }));
             }}
           >
@@ -143,13 +68,13 @@ const ChildCategory = ({
         </form>
       ) : (
         <div>
-          <p>{child.notes || "No notes provided."}</p>
+          <p>{category.notes || "No notes provided."}</p>
           <button
             onClick={() => {
-              setEditMode(child.id);
+              setEditMode(category.id);
               setEditNotes((prev) => ({
                 ...prev,
-                [child.id]: child.notes || "",
+                [category.id]: category.notes || "",
               }));
             }}
             className="edit-button"
@@ -159,8 +84,25 @@ const ChildCategory = ({
         </div>
       )}
     </div>
+    {category.children?.length > 0 && (
+      <ul className="subcategory-list">
+        {category.children.map((child) => (
+          <Category
+            key={child.id}
+            category={child}
+            editMode={editMode}
+            editNotes={editNotes}
+            setEditMode={setEditMode}
+            setEditNotes={setEditNotes}
+            handleEditNotes={handleEditNotes}
+            confirmRemoveCategory={confirmRemoveCategory}
+            isChild={true}
+          />
+        ))}
+      </ul>
+    )}
   </li>
-);    
+);
 
 const Spending = () => {
   const dispatch = useDispatch();
@@ -293,58 +235,52 @@ const Spending = () => {
 
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
-  
+
     const grouped = {}; // Object to store grouped categories
-  
+    const processedIds = new Set(); // Track processed category IDs to prevent duplicates
+
     spending.categories.forEach((category) => {
-      // Log the category being processed
-      console.log(`Processing category: ${category.name} (ID: ${category.category_id}, Parent ID: ${category.parent_categories_id})`);
-  
-      if (category.parent_categories_id === null) {
-        // Handle parent categories
-        if (!grouped[category.category_id]) {
-          grouped[category.category_id] = {
-            name: category.name,
-            notes: category.notes,
-            children: [],
-            id: category.category_id,
-          };
-          console.log(`Added parent category: '${category.name}' (ID: ${category.category_id})`);
-        } else {
-          // Update parent category details if already initialized
-          grouped[category.category_id].name = category.name;
-          grouped[category.category_id].notes = category.notes;
-        }
+      const { category_id, name, notes, parent_categories_id } = category;
+
+      if (processedIds.has(category_id)) {
+        console.warn(
+          `Duplicate category detected: ${name} (ID: ${category_id})`
+        );
+        return; // Skip duplicate entries
+      }
+
+      processedIds.add(category_id);
+
+      if (parent_categories_id === null) {
+        // Parent category
+        grouped[category_id] = grouped[category_id] || {
+          name,
+          notes,
+          children: [],
+          id: category_id,
+        };
+        grouped[category_id].name = name;
+        grouped[category_id].notes = notes;
       } else {
-        // Handle child categories
-        if (!grouped[category.parent_categories_id]) {
-          // Initialize parent category if it doesn't exist yet
-          grouped[category.parent_categories_id] = {
+        // Child category
+        if (!grouped[parent_categories_id]) {
+          grouped[parent_categories_id] = {
             name: null,
             notes: null,
             children: [],
-            id: category.parent_categories_id,
+            id: parent_categories_id,
           };
-          console.log(`Initialized placeholder for parent ID: ${category.parent_categories_id}`);
         }
-  
-        const parent = grouped[category.parent_categories_id];
-        if (!parent.children.some((child) => child.id === category.category_id)) {
-          // Add child category to parent's children array
-          console.log(`Adding child '${category.name}' (ID: ${category.category_id}) to parent '${parent.name || 'unknown'}' (ID: ${parent.id})`);
-          parent.children.push({
-            name: category.name,
-            notes: category.notes,
-            id: category.category_id,
-          });
+        const parent = grouped[parent_categories_id];
+        if (!parent.children.some((child) => child.id === category_id)) {
+          parent.children.push({ name, notes, id: category_id });
         }
       }
     });
-  
+
     console.log("Final Grouped Categories After Processing:", grouped);
     return grouped;
   }, [spending?.categories]);
-   
 
   useEffect(() => {
     // Log Redux spending data when it changes
@@ -413,46 +349,29 @@ const Spending = () => {
         {Object.keys(groupedCategories).length > 0 ? (
           <ul className="category-list">
             {Object.values(groupedCategories).map((group, index) => (
-              <React.Fragment key={`group-${group.id}-${index}`}>
-                <ParentCategory
-                  group={group}
-                  editMode={editMode}
-                  editNotes={editNotes}
-                  setEditMode={setEditMode}
-                  setEditNotes={setEditNotes}
-                  handleEditNotes={handleEditNotes}
-                  confirmRemoveCategory={confirmRemoveCategory}
-                />
-                {group.children.length > 0 && (
-                  <ul className="subcategory-list">
-                    {group.children.map((child, idx) => (
-                      <ChildCategory
-                        key={`child-${child.id}-${idx}`}
-                        child={child}
-                        editMode={editMode}
-                        editNotes={editNotes}
-                        setEditMode={setEditMode}
-                        setEditNotes={setEditNotes}
-                        handleEditNotes={handleEditNotes}
-                        confirmRemoveCategory={confirmRemoveCategory}
-                      />
-                    ))}
-                  </ul>
-                )}
-              </React.Fragment>
+              <Category
+                key={`group-${group.id}-${index}`}
+                category={group}
+                editMode={editMode}
+                editNotes={editNotes}
+                setEditMode={setEditMode}
+                setEditNotes={setEditNotes}
+                handleEditNotes={handleEditNotes}
+                confirmRemoveCategory={confirmRemoveCategory}
+              />
             ))}
           </ul>
         ) : (
           <p>No categories available in spending.</p>
         )}
-  
+
         <button
           className="add-category-button"
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? "Cancel" : "Add Category"}
         </button>
-  
+
         {showForm && (
           <form onSubmit={handleAddCategory} className="add-category-form">
             <label>
@@ -484,7 +403,7 @@ const Spending = () => {
             <button type="submit">Add Category</button>
           </form>
         )}
-  
+
         {showModal && (
           <div className="confirmation-modal">
             <div className="modal-content">
