@@ -207,13 +207,19 @@ const Spending = () => {
       } else {
         // Process child categories
         if (!grouped[parent_categories_id]) {
+          const parentCategory = spending.categories.find(
+            (cat) => cat.category_id === parent_categories_id
+          );
+  
+          // Initialize parent details if available
           grouped[parent_categories_id] = {
-            name: null,
-            notes: null,
+            name: parentCategory?.name || null,
+            notes: parentCategory?.notes || null,
             children: [],
             id: parent_categories_id,
           };
-          console.log(`Initialized placeholder for parent ID: ${parent_categories_id}`);
+  
+          console.log(`Initialized parent ID: ${parent_categories_id} with details:`, grouped[parent_categories_id]);
         }
   
         const parent = grouped[parent_categories_id];
@@ -237,9 +243,9 @@ const Spending = () => {
   
     console.log("Processed Grouped Categories:", grouped);
     return grouped;
-  }, [JSON.stringify(spending?.categories)]); // Track deep dependencies   
-   
+  }, [JSON.stringify(spending?.categories)]); // Track deep dependencies
 
+  
   useEffect(() => {
     // Log Redux spending data when it changes
     console.log("Redux Spending Data:", spending);
