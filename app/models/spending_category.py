@@ -18,7 +18,7 @@ class SpendingCategory(db.Model):
         db.ForeignKey(add_prefix_for_prod('categories.id'), ondelete="CASCADE"),
         nullable=False
     )
-    notes = db.Column(db.String(255), nullable=True)  # New notes column
+    notes = db.Column(db.String(255), nullable=True, default="")
 
     # Relationships
     spending = db.relationship(
@@ -73,7 +73,7 @@ class SpendingCategory(db.Model):
         spending_category = SpendingCategory(
             spending_id=spending_id,
             category_id=category_id,
-            notes=notes  # Include notes during creation
+            notes=notes or ""  # Include notes during creation
         )
         db.session.add(spending_category)
         db.session.commit()

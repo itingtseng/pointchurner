@@ -49,24 +49,38 @@ export const thunkGetUserSpending = () => async (dispatch) => {
 
 export const thunkAddCategoryToSpending = (categoryData) => async (dispatch) => {
   try {
+    // Validate and set defaults for categoryData
+    if (!categoryData.category_id || typeof categoryData.category_id !== "number") {
+      throw new Error("Invalid category_id provided");
+    }
+    if (typeof categoryData.notes !== "string") {
+      categoryData.notes = ""; // Default to empty string if notes are invalid
+    }
+
     const res = await fetch("/api/spendings/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(categoryData),
+      body: JSON.stringify({
+        ...categoryData,
+        notes: categoryData.notes?.trim() || "",
+      }),
     });
+
     if (res.ok) {
       const data = await res.json();
-      dispatch(addCategoryToSpending(data.category)); // Use backend response
-      await dispatch(thunkGetUserSpending()); // Fetch the updated spending profile
+      dispatch(addCategoryToSpending(data.category)); // Update state
+      await dispatch(thunkGetUserSpending()); // Refresh spending data
     } else {
       const error = await res.json();
+      console.error("Backend Error:", error); // Log backend response
       throw new Error(error.message || "Failed to add category to spending");
     }
   } catch (error) {
-    console.error("Error adding category to spending:", error);
-    throw error;
+    console.error("Error adding category to spending:", error); // Log detailed error
+    throw error; // Re-throw to handle it in the UI
   }
 };
+
 
 
 export const thunkEditCategoryNotes = (categoryId, notes) => async (dispatch) => {

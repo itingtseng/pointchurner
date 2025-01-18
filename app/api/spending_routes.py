@@ -102,7 +102,7 @@ def add_category_to_spending():
     """
     data = request.get_json()
     category_id = data.get("category_id")
-    notes = data.get("notes", "")  # Default to an empty string if notes are not provided
+    notes = data.get("notes", "")  # Default to an empty string if notes are None
 
     # Validate input
     if not category_id:
@@ -122,7 +122,7 @@ def add_category_to_spending():
     existing_category_ids = {sc.category_id for sc in spending.categories}
     if category.id in existing_category_ids:
         return {"message": "Category already exists in spending profile!"}, 409
-    
+
     print(f"Adding Category ID {category.id} with Notes: '{notes.strip()}' to Spending ID {spending.id}")
 
     # Add the category and update notes if provided
@@ -130,25 +130,19 @@ def add_category_to_spending():
         new_spending_category = SpendingCategory(
             spending_id=spending.id,
             category_id=category.id,
-            notes=notes.strip()
+            notes=notes.strip() or None  # Convert empty strings to None
         )
         db.session.add(new_spending_category)
-
-        # Update the spending notes if provided
-        if notes.strip():  # Only update if notes are non-empty
-            spending.notes = notes
-
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        print(f"Error adding category to spending: {e}")  # Log the error
+        print(f"Error adding category to spending: {e}")
         return {"message": "Failed to add category to spending."}, 500
 
     # Return success response
     return jsonify({
         "message": "Category added successfully",
-        "category": format_category(new_spending_category),
-        "notes": spending.notes  # Return the updated notes
+        "category": format_category(new_spending_category)
     }), 201
 
 
@@ -156,12 +150,10 @@ def add_category_to_spending():
 @login_required
 def edit_category_notes(category_id):
     data = request.get_json()
-    notes = data.get("notes")
+    notes = data.get("notes", None)  # Allow None for clearing notes
     print(f"Received payload for editing notes - Category ID: {category_id}, Notes: {notes}")  # Debug
 
-    if notes is None:
-        return {"message": "Notes field is required!"}, 400
-
+    # Find the spending category
     spending_category = SpendingCategory.query.filter_by(
         category_id=category_id
     ).first()
@@ -170,7 +162,8 @@ def edit_category_notes(category_id):
         return {"message": "Category not found in spending profile!"}, 404
 
     try:
-        spending_category.notes = notes
+        # Update notes; allow None to clear them
+        spending_category.notes = notes.strip() if notes else None
         db.session.commit()
         print(f"Notes updated successfully for category ID {category_id}")  # Debug
     except Exception as e:
@@ -180,7 +173,12 @@ def edit_category_notes(category_id):
 
     return {
         "message": "Notes updated successfully.",
-        "category": spending_category.to_dict()  # Ensure to_dict() includes notes
+        "category": {
+            "id": spending_category.id,
+            "spending_id": spending_category.spending_id,
+            "category_id": spending_category.category_id,
+            "notes": spending_category.notes,  # Include updated notes
+        }
     }, 200
 
 

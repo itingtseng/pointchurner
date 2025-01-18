@@ -91,7 +91,7 @@ const Spending = () => {
         await dispatch(
           thunkAddCategoryToSpending({
             category_id: parseInt(newCategoryId),
-            notes: newCategoryNotes.trim(),
+            notes: newCategoryNotes.trim() || null,
           })
         );
         setShowForm(false);
