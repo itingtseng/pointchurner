@@ -19,6 +19,7 @@ function Navigation() {
         <NavLink to="/">
           <img src={logo} alt="Logo" className="logo" />
         </NavLink>
+        <h3>Point Churner</h3>
       </div>
       <div className="nav-right">
         <ul>
