@@ -145,15 +145,15 @@ const Spending = () => {
 
   const groupedCategories = useMemo(() => {
     if (!spending?.categories || !Array.isArray(spending.categories)) return {};
-  
+
     const grouped = {}; // Object to store grouped categories
-  
+
     spending.categories.forEach((category) => {
       if (!category.category_id || !category.name) {
         console.error("Invalid category detected:", category);
         return; // Skip invalid categories
       }
-  
+
       if (category.parent_categories_id === null) {
         // Handle parent categories
         if (!grouped[category.category_id]) {
@@ -177,12 +177,12 @@ const Spending = () => {
             id: category.parent_categories_id,
           };
         }
-  
+
         const parent = grouped[category.parent_categories_id];
         const childIndex = parent.children.findIndex(
           (child) => child.id === category.category_id
         );
-  
+
         if (childIndex === -1) {
           parent.children.push({
             name: category.name,
@@ -194,10 +194,9 @@ const Spending = () => {
         }
       }
     });
-  
+
     return grouped;
-  }, [JSON.stringify(spending?.categories)]); // Explicit dependency   
-   
+  }, [JSON.stringify(spending?.categories)]); // Explicit dependency
 
   useEffect(() => {
     // Log Redux spending data when it changes
@@ -265,92 +264,31 @@ const Spending = () => {
         <h3>Categories</h3>
         {Object.keys(groupedCategories).length > 0 ? (
           <ul className="category-list">
-            {Object.values(groupedCategories).map((group, index) => (
-              <React.Fragment key={`group-${group.id}-${index}`}>
-                <li>
+            {Object.values(groupedCategories).map((group, index) => {
+              if (!group.name && group.children.length === 0) return null;
+              return (
+                <React.Fragment key={`group-${group.id}-${index}`}>
                   {group.name && (
-                    <div className="category-parent">
-                      <strong className="category-name">{capitalizeFirstLetter(group.name)}:</strong>
-                      {editMode === group.id ? (
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            handleEditNotes(group.id);
-                          }}
-                        >
-                          <input
-                            type="text"
-                            value={editNotes[group.id] || ""}
-                            onChange={(e) =>
-                              setEditNotes((prev) => ({
-                                ...prev,
-                                [group.id]: e.target.value,
-                              }))
-                            }
-                            placeholder="Edit notes"
-                            maxLength={255}
-                          />
-                          <button type="submit">Save</button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditMode(null);
-                              setEditNotes((prev) => ({
-                                ...prev,
-                                [group.id]: "",
-                              }));
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        </form>
-                      ) : (
-                        <div>
-                          <p>{group.notes || "No notes provided."}</p>
-                          <button
-                            onClick={() => {
-                              setEditMode(group.id);
-                              setEditNotes((prev) => ({
-                                ...prev,
-                                [group.id]: group.notes || "",
-                              }));
-                            }}
-                            className="edit-button"
-                          >
-                            Edit Notes
-                          </button>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => confirmRemoveCategory(group.id)}
-                        className="remove-button"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                </li>
-                {group.children.length > 0 && (
-                <>
-                  {/* <ul className="subcategory-list"> */}
-                    {group.children.map((child, idx) => (
-                      <li key={`child-${child.id}-${idx}`}>
-                        <div className="category-child">
-                          <span className="category-name">{capitalizeFirstLetter(child.name)}</span>
-                          {editMode === child.id ? (
+                    <li>
+                      {group.name && (
+                        <div className="category-parent">
+                          <strong className="category-name">
+                            {capitalizeFirstLetter(group.name)}:
+                          </strong>
+                          {editMode === group.id ? (
                             <form
                               onSubmit={(e) => {
                                 e.preventDefault();
-                                handleEditNotes(child.id);
+                                handleEditNotes(group.id);
                               }}
                             >
                               <input
                                 type="text"
-                                value={editNotes[child.id] || ""}
+                                value={editNotes[group.id] || ""}
                                 onChange={(e) =>
                                   setEditNotes((prev) => ({
                                     ...prev,
-                                    [child.id]: e.target.value,
+                                    [group.id]: e.target.value,
                                   }))
                                 }
                                 placeholder="Edit notes"
@@ -363,7 +301,7 @@ const Spending = () => {
                                   setEditMode(null);
                                   setEditNotes((prev) => ({
                                     ...prev,
-                                    [child.id]: "",
+                                    [group.id]: "",
                                   }));
                                 }}
                               >
@@ -372,13 +310,13 @@ const Spending = () => {
                             </form>
                           ) : (
                             <div>
-                              <p>{child.notes || "No notes provided."}</p>
+                              <p>{group.notes || "No notes provided."}</p>
                               <button
                                 onClick={() => {
-                                  setEditMode(child.id);
+                                  setEditMode(group.id);
                                   setEditNotes((prev) => ({
                                     ...prev,
-                                    [child.id]: child.notes || "",
+                                    [group.id]: group.notes || "",
                                   }));
                                 }}
                                 className="edit-button"
@@ -388,31 +326,101 @@ const Spending = () => {
                             </div>
                           )}
                           <button
-                            onClick={() => confirmRemoveCategory(child.id)}
+                            onClick={() => confirmRemoveCategory(group.id)}
                             className="remove-button"
                           >
                             Remove
                           </button>
                         </div>
-                      </li>
-                    ))}
-                    {/* </ul> */}
-                  </>
-                )}
-              </React.Fragment>
-            ))}
+                      )}
+                    </li>
+                  )}
+                  {group.children.length > 0 && (
+                    <>
+                      {/* <ul className="subcategory-list"> */}
+                      {group.children.map((child, idx) => (
+                        <li key={`child-${child.id}-${idx}`}>
+                          <div className="category-child">
+                            <span className="category-name">
+                              {capitalizeFirstLetter(child.name)}
+                            </span>
+                            {editMode === child.id ? (
+                              <form
+                                onSubmit={(e) => {
+                                  e.preventDefault();
+                                  handleEditNotes(child.id);
+                                }}
+                              >
+                                <input
+                                  type="text"
+                                  value={editNotes[child.id] || ""}
+                                  onChange={(e) =>
+                                    setEditNotes((prev) => ({
+                                      ...prev,
+                                      [child.id]: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Edit notes"
+                                  maxLength={255}
+                                />
+                                <button type="submit">Save</button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditMode(null);
+                                    setEditNotes((prev) => ({
+                                      ...prev,
+                                      [child.id]: "",
+                                    }));
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </form>
+                            ) : (
+                              <div>
+                                <p>{child.notes || "No notes provided."}</p>
+                                <button
+                                  onClick={() => {
+                                    setEditMode(child.id);
+                                    setEditNotes((prev) => ({
+                                      ...prev,
+                                      [child.id]: child.notes || "",
+                                    }));
+                                  }}
+                                  className="edit-button"
+                                >
+                                  Edit Notes
+                                </button>
+                              </div>
+                            )}
+                            <button
+                              onClick={() => confirmRemoveCategory(child.id)}
+                              className="remove-button"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                      {/* </ul> */}
+                    </>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </ul>
         ) : (
           <p>No categories available in spending.</p>
         )}
-  
+
         <button
           className="add-category-button"
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? "Cancel" : "Add Category"}
         </button>
-  
+
         {showForm && (
           <form onSubmit={handleAddCategory} className="add-category-form">
             <label>
@@ -444,7 +452,7 @@ const Spending = () => {
             <button type="submit">Add Category</button>
           </form>
         )}
-  
+
         {showModal && (
           <div className="confirmation-modal">
             <div className="modal-content">
@@ -464,7 +472,7 @@ const Spending = () => {
         )}
       </div>
     </div>
-  );  
+  );
 };
 
 export default Spending;
