@@ -1,5 +1,21 @@
 {
+  "name": "pointchurner",
+  "version": "1.0.0",
+  "description": "Point Churner is a user-friendly app designed to help credit card holders optimize their spending strategies. Users can effortlessly build their wallet by adding, editing, and removing credit cards from the database. Once cards are added, users can manage their spending categories by creating new ones, editing existing ones, or removing categories they no longer use. The app then provides a personalized spending strategy on the home page, offering tailored credit card usage suggestions based on the cards in their wallet and their unique spending habits. With a focus on practicality and ease of use, Point Churner aims to become a standout project and a highlight of my portfolio.",
+  "type": "module",
+  "main": "scripts/cronJob.js",
+  "scripts": {
+    "start": "node scripts/cronJob.js",
+    "cron-job": "node scripts/cronJob.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
+    "cron": "^3.5.0",
+    "node-cron": "^3.0.3",
+    "node-fetch": "^3.3.2",
     "reselect": "^5.1.1"
-  }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
